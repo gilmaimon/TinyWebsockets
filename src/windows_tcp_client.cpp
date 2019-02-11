@@ -120,20 +120,20 @@ void windowsTcpRecive(uint8_t* buffer, uint32_t len, SOCKET socket) {
 	}
 }
 
-bool WinTcpClient::connect(String host, int port) {
+bool WinTcpSocket::connect(String host, int port) {
     this->socket = windowsTcpConnect(host, port);
     return available();
 }
-bool WinTcpClient::available() {
+bool WinTcpSocket::available() {
     return socket != INVALID_SOCKET;
 }
-void WinTcpClient::send(String data) {
+void WinTcpSocket::send(String data) {
     windowsTcpSend((uint8_t*) data.c_str(), data.size(), this->socket);
 }
-void WinTcpClient::send(uint8_t* data, uint32_t len) {
+void WinTcpSocket::send(uint8_t* data, uint32_t len) {
     windowsTcpSend(data, len, this->socket);
 }
-String WinTcpClient::readLine() {
+String WinTcpSocket::readLine() {
     uint8_t byte = '0';
     String line;
     windowsTcpRecive(&byte, 1, this->socket);
@@ -144,10 +144,10 @@ String WinTcpClient::readLine() {
     }
     return line;
 }
-void WinTcpClient::read(uint8_t* buffer, uint32_t len) {
+void WinTcpSocket::read(uint8_t* buffer, uint32_t len) {
     windowsTcpRecive(buffer, len, this->socket);
 }
-WinTcpClient::~WinTcpClient() {
+WinTcpSocket::~WinTcpSocket() {
     closesocket(socket);
     WSACleanup();
 }
