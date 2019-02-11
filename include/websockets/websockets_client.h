@@ -10,7 +10,7 @@ public:
 	WebSocketsClient(TcpClient* client);
 
 	bool connect(String host, int port);
-	void poll();
+	bool poll(String& data);
 	bool available();
 	void send(String data);
 

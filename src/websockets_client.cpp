@@ -29,9 +29,12 @@ bool WebSocketsClient::connect(String host, int port) {
     }
 }
 
-void WebSocketsClient::poll() {
+bool WebSocketsClient::poll(String& data) {
+    if(!WebSocketsEndpoint::poll()) return false;
+
     auto frame = WebSocketsEndpoint::recv();
-    frame.log();
+    data = frame.payload;
+    return true;
 }
 
 void WebSocketsClient::send(String data) {

@@ -8,6 +8,7 @@
 class WinTcpSocket : public TcpSocket {
 public:
 	bool connect(String host, int port);
+	bool poll() override;
 	bool available() override;
 	void send(String data) override;
 	void send(uint8_t* data, uint32_t len) override;
@@ -24,6 +25,11 @@ public:
 	bool connect(String host, int port) {
 		return socket.connect(host, port);
 	}
+
+	bool poll() {
+		return socket.poll();
+	}
+
 	bool available() override {
 		return socket.available();
 	}

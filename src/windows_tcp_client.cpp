@@ -88,7 +88,7 @@ bool windowsTcpSend(uint8_t* buffer, uint32_t len, SOCKET socket) {
 		return false;
 	}
 
-	printf("Bytes Sent: %ld\n", iResult);
+	//printf("Bytes Sent: %ld\n", iResult);
 	return true;
 }
 
@@ -123,6 +123,11 @@ void windowsTcpRecive(uint8_t* buffer, uint32_t len, SOCKET socket) {
 bool WinTcpSocket::connect(String host, int port) {
     this->socket = windowsTcpConnect(host, port);
     return available();
+}
+bool WinTcpSocket::poll() {
+	unsigned long l;
+	ioctlsocket(this->socket, FIONREAD, &l);
+	return l > 0;
 }
 bool WinTcpSocket::available() {
     return socket != INVALID_SOCKET;

@@ -5,6 +5,10 @@ WebSocketsEndpoint::WebSocketsEndpoint(TcpSocket& socket) : _socket(socket) {
     // Empty
 }
 
+bool WebSocketsEndpoint::poll() {
+    return this->_socket.poll();
+}
+
 Header readHeaderFromSocket(TcpSocket& socket) {
     Header header;
     header.payload = 0;
@@ -94,7 +98,7 @@ void WebSocketsEndpoint::send(String data, uint8_t opcode, bool mask, uint8_t ma
     header.mask = mask? 1: 0;
     header.payload = data.size() < 126? data.size(): data.size() > 1<<16? 127: 126;
 
-    header.log();
+    //header.log();
     // send initial header
     this->_socket.send((uint8_t*) &header, 2);
 

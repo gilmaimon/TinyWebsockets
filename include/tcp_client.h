@@ -3,6 +3,7 @@
 
 struct TcpSocket {
 	virtual bool available() = 0;
+	virtual bool poll() = 0;
 	virtual void send(String data) = 0;
 	virtual void send(uint8_t* data, uint32_t len) = 0;
 	virtual String readLine() = 0;
