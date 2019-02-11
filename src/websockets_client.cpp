@@ -45,85 +45,83 @@ WebSocketsClient::~WebSocketsClient() {
     delete this->_client;
 }
 
-WebsocketsFrame WebSocketsClient::recvFrame() {
-    struct Header {
-        uint8_t opcode : 4;
-        uint8_t flags : 3;
-        uint8_t fin : 1;
-        uint8_t payload : 7;
-        uint8_t mask : 1;
-    
-        void log() {
-            std::cout << "Header:" << std::endl;
-            std::cout << "-> fin: " <<  (int)fin << std::endl;
-            std::cout << "-> flags: " << std::bitset<3>(flags) << std::endl;
-            std::cout << "-> opcode: " << std::hex << (int) opcode << std::dec << " (" << std::bitset<4>(opcode) << ")" << std::endl;
-            std::cout << "-> payload: " << (int)payload << " (" << std::bitset<7>(payload) << ")" << std::endl;
-            std::cout << "-> mask: " << (int)mask << std::endl;
-        }
-    };
-
+Header readHeaderFromSocket(TcpClient* client) {
     Header header;
     header.payload = 0;
+    client->read((uint8_t*)&header, 2);
+    return std::move(header);
+}
 
-    //std::cout << "Reading header" << std::endl;
-    
-    // read common header
-    this->_client->read((uint8_t*)&header, 2);
-    //header.log();
-
+uint64_t readExtendedPayloadLength(TcpClient* client, const Header& header) {
     uint64_t extendedPayload = header.payload;
     // in case of extended payload length
     if (header.payload == 126) {
         // read next 16 bits as payload length
         uint16_t tmp = 0;
-        this->_client->read((uint8_t*)&tmp, 2);
+        client->read((uint8_t*)&tmp, 2);
         tmp = (tmp << 8) | (tmp >> 8);
         extendedPayload = tmp;
     }
     else if (header.payload == 127) {
         // TODO: read next 64 bits as payload length and handle such very long messages
     }
-    //std::cout << "extendedPayload: " << extendedPayload << std::endl;
 
-    uint8_t maskingKey[4];
+    return extendedPayload;
+}
 
-    // if masking is set
-    if (header.mask) {
-        // read the masking key
-        this->_client->read((uint8_t*)maskingKey, 1);
-    }
+void readMaskingKey(TcpClient* client, uint8_t* outputBuffer) {
+    client->read((uint8_t*)outputBuffer, 4);
+}
 
-    // read the message's payload (data) according to the read length
+String readData(TcpClient* client, uint64_t extendedPayload) {
     const uint64_t BUFFER_SIZE = 64;
+
     String data = "";
     uint8_t buffer[BUFFER_SIZE];
     uint64_t done_reading = 0;
     while (done_reading < extendedPayload) {
         uint64_t to_read = extendedPayload - done_reading >= BUFFER_SIZE ? BUFFER_SIZE : extendedPayload - done_reading;
-        this->_client->read(buffer, to_read);
+        client->read(buffer, to_read);
         done_reading += to_read;
 
         for (int i = 0; i < to_read; i++) {
             data += (char)buffer[i];
         }
-        //std::cout << "Building data: " << data << std::endl;
     }
+    return data;
+}
 
+String unmaskData(String& data, const uint8_t* const maskingKey, uint64_t payloadLength) {
+    for (int i = 0; i < payloadLength; i++) {
+        data[i] = data[i] ^ maskingKey[i % 4];
+    }
+}
+
+WebsocketsFrame WebSocketsClient::recvFrame() {
+    auto header = readHeaderFromSocket(this->_client);
+    uint64_t payloadLength = readExtendedPayloadLength(this->_client, header);
+    
+    uint8_t maskingKey[4];
     // if masking is set
     if (header.mask) {
-        // un-mask the message
-        for (int i = 0; i < extendedPayload; i++) {
-            data[i] = data[i] & maskingKey[i % 4];
-        }
+        readMaskingKey(this->_client, maskingKey);
     }
 
+    // read the message's payload (data) according to the read length
+    String data = readData(this->_client, payloadLength);
+
+    // if masking is set un-mask the message
+    if (header.mask) {
+        unmaskData(data, maskingKey, payloadLength);
+    }
+
+    // Construct frame from data and header that was read
     WebsocketsFrame frame;
     frame.fin = header.fin;
     frame.mask = header.mask;
     memcpy(frame.mask_buf, maskingKey, 4);
     frame.opcode = header.opcode;
-    frame.payload_length = extendedPayload;
+    frame.payload_length = payloadLength;
     frame.payload = data;
     return frame;
 }
