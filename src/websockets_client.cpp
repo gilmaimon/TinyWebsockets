@@ -15,7 +15,7 @@ struct HandshakeRequestResult {
     String expectedAcceptKey;
 };
 HandshakeRequestResult generateHandshake(String uri) {
-    String randomBytes = "1234567890123456";
+    String randomBytes = crypto::randomBytes(16);
 
     String handshake = "GET " + uri + " HTTP/1.1\r\n";
     handshake += "Upgrade: websocket\r\n";

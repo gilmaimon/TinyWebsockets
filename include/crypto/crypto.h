@@ -20,5 +20,13 @@ namespace crypto {
         SHA1 checksum;
         checksum.update(data);
         return checksum.final();
-    }    
+    }
+
+    String randomBytes(size_t len) {
+      // TODO: fix dummy implementation (16 is the number of websockets key length for handshakes)
+      if(len == 16) {
+        return "1234567890123456";
+      }
+      return "";
+    }
 }
