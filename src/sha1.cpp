@@ -16,7 +16,7 @@
         -- Eugene Hopkinson <slowriot at voxelstorm dot com>
 */
 
-#include "sha1.h"
+#include "crypto/sha1.h"
 #include <sstream>
 #include <iomanip>
 #include <fstream>

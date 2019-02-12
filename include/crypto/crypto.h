@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common.h"
-#include "base64.h"
-#include "sha1.h"
+#include "crypto/base64.h"
+#include "crypto/sha1.h"
 
 namespace crypto {
     String base64Encode(String data) {

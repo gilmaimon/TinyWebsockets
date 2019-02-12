@@ -24,9 +24,11 @@ HandshakeRequestResult generateHandshake(String uri) {
     handshake += "Sec-WebSocket-Version: 13\r\n";
     handshake += "\r\n";
 
-    String expectedAccept = crypto::base64Encode(crypto::sha1(
-        crypto::base64Encode(randomBytes) + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-    ));
+    String expectedAccept = crypto::base64Encode(
+        crypto::sha1(
+            crypto::base64Encode(randomBytes) + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+        )
+    );
 
     HandshakeRequestResult result;
     result.requestStr = handshake;
@@ -35,7 +37,45 @@ HandshakeRequestResult generateHandshake(String uri) {
 }
 
 bool isWhitespace(char ch) {
-    return ch == ' ' || ch == '\t';
+    return ch == ' ' || ch == '\t' || '\r' || '\n';
+}
+
+struct HandshakeResponseResult {
+    bool isSuccess;
+    String serverAccept;
+};
+HandshakeResponseResult parseHandshakeResponse(String responseHeaders) {
+    bool didUpgradeToWebsockets = false, isConnectionUpgraded = false;
+    String serverAccept = "";
+    size_t idx = 0;
+    while(idx < responseHeaders.size()) {
+        String key = "", value = "";
+        // read header key
+        while(idx < responseHeaders.size() && responseHeaders[idx] != ':') key += responseHeaders[idx++];
+        
+        // ignore ':' and whitespace
+        ++idx;
+        while(idx < responseHeaders.size() && isWhitespace(responseHeaders[idx])) idx++;
+
+        // read header value until \r\n or whitespace
+        while(idx < responseHeaders.size() && !isWhitespace(responseHeaders[idx])) value += responseHeaders[idx++];
+
+        // ignore rest of whitespace
+        while(idx < responseHeaders.size() && isWhitespace(responseHeaders[idx])) idx++;
+
+        if(key == "Upgrade") {
+            didUpgradeToWebsockets = (value == "websocket");
+        } else if(key == "Connection") {
+            isConnectionUpgraded = (value == "Upgrade");
+        } else if(key == "Sec-WebSocket-Accept") {
+            serverAccept = value;
+        }
+    }
+
+    HandshakeResponseResult result;
+    result.isSuccess = serverAccept != "" && didUpgradeToWebsockets && isConnectionUpgraded;
+    result.serverAccept = serverAccept;
+    return result;
 }
 
 bool WebSocketsClient::connect(String host, int port) {
@@ -47,17 +87,26 @@ bool WebSocketsClient::connect(String host, int port) {
 
 
     auto head = this->_client->readLine();
-    if(head != "HTTP/1.1 101 Switching Protocols") {
+    if(head != "HTTP/1.1 101 Switching Protocols\r\n") {
         //TODO indicate Error!!
         return false;
     }
 
-    // TODO don't ignore server's response
+    String serverResponseHeaders = "";
+    String line = "";
     while (true) {
-        auto line = this->_client->readLine();
-        std::cout << "Got: " << line << std::endl;
+        line = this->_client->readLine();
+        serverResponseHeaders += line;
         if (line == "\r\n") break;
     }
+    
+    auto parsedResponse = parseHandshakeResponse(serverResponseHeaders);
+    if(parsedResponse.isSuccess == false || parsedResponse.serverAccept != handshake.expectedAcceptKey) {
+        // TODO indicate Error!!
+        return false;
+    }
+
+    return true;
 }
 
 void WebSocketsClient::onMessage(MessageCallback callback) {
