@@ -17,7 +17,7 @@ enum MessageType {
 // The class the user will interact with as a message
 // This message can be partial (so practically this is a Frame and not a message)
 struct WebsocketsMessage {
-    WebsocketsMessage(MessageType type, String data, bool partial = false) : _type(type), _data(data), _isPartial(partial) {}
+    WebsocketsMessage(MessageType type, String data, bool fragmented = false) : _type(type), _data(data), _fragmented(fragmented) {}
     static WebsocketsMessage CreateBinary(String data, bool partial = false) {
         return WebsocketsMessage(MessageType::Binary, data, partial);
     }
@@ -29,18 +29,20 @@ struct WebsocketsMessage {
         return WebsocketsMessage(
             (MessageType) frame.opcode,
             frame.payload,
-            !frame.fin
+            !frame.fin && frame.opcode != 0 || frame.fin && frame.opcode == 0
         );
     }
     
-    bool isText() { return this->_type == MessageType::Text; }
-    bool isBinary() { return this->_type == MessageType::Binary; }
+    bool isText() const { return this->_type == MessageType::Text; }
+    bool isBinary() const { return this->_type == MessageType::Binary; }
 
-    MessageType type() { return this->_type; }
-    String data() { return this->_data; }
+    MessageType type() const { return this->_type; }
+    String data() const { return this->_data; }
+
+    bool isFragmented() const { return this->_fragmented; }
 
 private:
     MessageType _type;
     String _data;
-    bool _isPartial;
+    bool _fragmented;
 };
