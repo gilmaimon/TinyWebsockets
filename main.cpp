@@ -6,18 +6,16 @@ int main() {
 	WebSocketsClient client(new WinTcpClient);
 	client.connect("localhost", 8080);
 
-	client.setMessageHandler([&](WebsocketsMessage message){
-		if(message.isText()) {
-			std::cout << "Got Text: " << message.data() << std::endl;
-		} else {
-			std::cout << "Else. " << std::endl;
-		}
+	client.onMessage([&](WebsocketsMessage message){
+		std::cout << "Got Data: " << message.data() << std::endl;
 	});
 
+	String data;
 	while(true) {
-		String data;
 		std::cin >> data;
-		if(data != "skip") client.send(data);
+		if(data != "skip") 
+			client.send(data);
+		
 		client.poll();
 	}
 	system("pause");

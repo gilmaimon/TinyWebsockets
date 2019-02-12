@@ -30,7 +30,7 @@ bool WebSocketsClient::connect(String host, int port) {
     }
 }
 
-void WebSocketsClient::setMessageHandler(MessageCallback callback) {
+void WebSocketsClient::onMessage(MessageCallback callback) {
     this->_callback = callback;
 }
 

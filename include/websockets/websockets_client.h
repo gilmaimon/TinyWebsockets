@@ -11,7 +11,7 @@ public:
 	WebSocketsClient(TcpClient* client);
 
 	bool connect(String host, int port);
-	void setMessageHandler(MessageCallback callback);
+	void onMessage(MessageCallback callback);
 	void poll();
 	bool available();
 
