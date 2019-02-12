@@ -4,13 +4,15 @@
 #include "tcp_client.h"
 #include "websockets/data_frame.h"
 #include "websockets/websockets_endpoint.h"
+#include "websockets/message.h"
 
 class WebSocketsClient : private WebSocketsEndpoint {
 public:
 	WebSocketsClient(TcpClient* client);
 
 	bool connect(String host, int port);
-	bool poll(String& data);
+	void setMessageHandler(MessageCallback callback);
+	void poll();
 	bool available();
 	void send(String data);
 
@@ -18,5 +20,5 @@ public:
 
 private:
 	TcpClient* _client;
-	WebsocketsFrame recvFrame();
+	MessageCallback _callback;
 };

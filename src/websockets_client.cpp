@@ -1,6 +1,7 @@
 #include "common.h"
 #include "tcp_client.h"
 #include "websockets/data_frame.h"
+#include "websockets/message.h"
 #include "websockets/websockets_client.h"
 #include <memory.h>
 
@@ -29,12 +30,15 @@ bool WebSocketsClient::connect(String host, int port) {
     }
 }
 
-bool WebSocketsClient::poll(String& data) {
-    if(!WebSocketsEndpoint::poll()) return false;
+void WebSocketsClient::setMessageHandler(MessageCallback callback) {
+    this->_callback = callback;
+}
 
-    auto frame = WebSocketsEndpoint::recv();
-    data = frame.payload;
-    return true;
+void WebSocketsClient::poll() {
+    if(WebSocketsEndpoint::poll()) {
+        auto frame = WebSocketsEndpoint::recv();
+        this->_callback(WebsocketsMessage::CreateFromFrame(frame));
+    }
 }
 
 void WebSocketsClient::send(String data) {
