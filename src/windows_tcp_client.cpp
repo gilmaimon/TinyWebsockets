@@ -19,7 +19,7 @@
 
 SOCKET windowsTcpConnect(String host, int port) {
 	WSADATA wsaData;
-	SOCKET ConnectSocket = INVALID_SOCKET;
+	SOCKET connectSocket = INVALID_SOCKET;
 	struct addrinfo *result = NULL,
 		*ptr = NULL,
 		hints;
@@ -27,7 +27,6 @@ SOCKET windowsTcpConnect(String host, int port) {
 	// Initialize Winsock
 	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
-		printf("WSAStartup failed with error: %d\n", iResult);
 		return INVALID_SOCKET;
 	}
 
@@ -39,8 +38,6 @@ SOCKET windowsTcpConnect(String host, int port) {
 	// Resolve the server address and port
 	iResult = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &result);
 	if (iResult != 0) {
-		printf("getaddrinfo failed with error: %d\n", iResult);
-		WSACleanup();
 		return INVALID_SOCKET;
 	}
 
@@ -48,19 +45,17 @@ SOCKET windowsTcpConnect(String host, int port) {
 	for (ptr = result; ptr != NULL; ptr = ptr->ai_next) {
 
 		// Create a SOCKET for connecting to server
-		ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype,
+		connectSocket = socket(ptr->ai_family, ptr->ai_socktype,
 			ptr->ai_protocol);
-		if (ConnectSocket == INVALID_SOCKET) {
-			printf("socket failed with error: %ld\n", WSAGetLastError());
-			WSACleanup();
+		if (connectSocket == INVALID_SOCKET) {
 			return INVALID_SOCKET;
 		}
 
 		// Connect to server.
-		iResult = connect(ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		iResult = connect(connectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 		if (iResult == SOCKET_ERROR) {
-			closesocket(ConnectSocket);
-			ConnectSocket = INVALID_SOCKET;
+			closesocket(connectSocket);
+			connectSocket = INVALID_SOCKET;
 			continue;
 		}
 		break;
@@ -68,55 +63,32 @@ SOCKET windowsTcpConnect(String host, int port) {
 
 	freeaddrinfo(result);
 
-	if (ConnectSocket == INVALID_SOCKET) {
-		printf("Unable to connect to server!\n");
-		WSACleanup();
-		return INVALID_SOCKET;
-	}
-
-	return ConnectSocket;
+	return connectSocket;
 }
 
-
+// Returns true if an error occured
 bool windowsTcpSend(uint8_t* buffer, uint32_t len, SOCKET socket) {
 	// Send an initial buffer
 	const char* cBuffer = (const char*)buffer;
 
 	int iResult = send(socket, cBuffer, len, 0);
 	if (iResult == SOCKET_ERROR) {
-		printf("send failed with error: %d\n", WSAGetLastError());
-		return false;
+		//printf("send failed with error: %d\n", WSAGetLastError());
+		return true;
 	}
 
-	//printf("Bytes Sent: %ld\n", iResult);
-	return true;
+	return false;
 }
 
-/*
-
-// shutdown the connection since no more data will be sent
-iResult = shutdown(ConnectSocket, SD_SEND);
-if (iResult == SOCKET_ERROR) {
-printf("shutdown failed with error: %d\n", WSAGetLastError());
-closesocket(ConnectSocket);
-WSACleanup();
-return 1;
-}
-
-
-*/
-void windowsTcpRecive(uint8_t* buffer, uint32_t len, SOCKET socket) {
+// Returns true if error occured
+bool windowsTcpRecive(uint8_t* buffer, uint32_t len, SOCKET socket) {
 	// Receive until the peer closes the connection
 	int iResult = recv(socket, (char*)buffer, len, 0);
 	if (iResult > 0) {
-		return;
-		printf("Bytes received: %d\n", iResult);
-	}
-	else if (iResult == 0) {
-		printf("Connection closed\n");
+		return false;
 	}
 	else {
-		printf("recv failed with error: %d\n", WSAGetLastError());
+		return true;
 	}
 }
 
@@ -124,39 +96,58 @@ bool WinTcpSocket::connect(String host, int port) {
     this->socket = windowsTcpConnect(host, port);
     return available();
 }
+
 bool WinTcpSocket::poll() {
-	unsigned long l;
-	ioctlsocket(this->socket, FIONREAD, &l);
-	return l > 0;
+	unsigned long bytesToRead;
+	auto errorCode = ioctlsocket(this->socket, FIONREAD, &bytesToRead);
+	if(errorCode == SOCKET_ERROR) {
+		close();
+		return false;
+	}
+	else {
+		return bytesToRead > 0;
+	}
 }
+
 bool WinTcpSocket::available() {
     return socket != INVALID_SOCKET;
 }
+
 void WinTcpSocket::send(String data) {
-    windowsTcpSend((uint8_t*) data.c_str(), data.size(), this->socket);
+    this->send((uint8_t*) data.c_str(), data.size());
 }
+
 void WinTcpSocket::send(uint8_t* data, uint32_t len) {
-    windowsTcpSend(data, len, this->socket);
+    auto error = windowsTcpSend(data, len, this->socket);
+	if(error) close();
 }
+
 String WinTcpSocket::readLine() {
     uint8_t byte = '0';
     String line;
-    windowsTcpRecive(&byte, 1, this->socket);
-    while (true) {
+    auto error = windowsTcpRecive(&byte, 1, this->socket);
+    while (!error) {
         line += (char)byte;
         if (byte == '\n') break;
-        windowsTcpRecive(&byte, 1, this->socket);
+        error = windowsTcpRecive(&byte, 1, this->socket);
     }
+	if(error) close();
     return line;
 }
 void WinTcpSocket::read(uint8_t* buffer, uint32_t len) {
-    windowsTcpRecive(buffer, len, this->socket);
+    auto error = windowsTcpRecive(buffer, len, this->socket);
+	if(error) close();
 }
 
 void WinTcpSocket::close() {
-	closesocket(socket);
-    // TODO WSA cleanup shouldnt be called multiple times?
-	WSACleanup();
+	if(socket != INVALID_SOCKET) {
+		socket = INVALID_SOCKET;
+		// shutdown the connection since no more data will be sent/received
+		shutdown(socket, SD_BOTH);
+		closesocket(socket);
+		// TODO WSA cleanup shouldnt be called multiple times?
+		WSACleanup();
+	}
 }
 
 WinTcpSocket::~WinTcpSocket() {

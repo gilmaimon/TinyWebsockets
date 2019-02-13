@@ -1,7 +1,7 @@
 #include "websockets/websockets_client.h"
 #include "windows/win_tcp_client.h"
+#include <iostream>
 
-#include <thread>
 int main() {
 	WebSocketsClient client(new WinTcpClient);
 	client.connect("localhost", 8080);
@@ -11,12 +11,16 @@ int main() {
 	});
 
 	String data;
-	while(true) {
-		std::cin >> data;
-		if(data != "skip") 
-			client.send(data);
+	while(client.available()) {
+		std::cout << "Enter input: ";
+		std::getline(std::cin, data);
 		
+		if(data.size() > 0) {
+			if(data == "exit") client.close();
+			else client.send(data);
+		}
+
 		client.poll();
 	}
-	system("pause");
+	std::cout << "Exited Gracefully" << std::endl;	
 }

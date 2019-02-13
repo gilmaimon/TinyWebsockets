@@ -18,6 +18,8 @@ public:
 	void send(String data);
 	void sendBinary(String data);
 
+	void close();
+
 	~WebSocketsClient();
 
 private:
@@ -29,5 +31,5 @@ private:
 	void _handlePong(WebsocketsMessage);
 	void _handleClose(WebsocketsMessage);
 
-	void closeConnection();
+	void sendClosePacket();
 };

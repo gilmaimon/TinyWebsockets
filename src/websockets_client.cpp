@@ -85,7 +85,7 @@ bool WebSocketsClient::connect(String host, int port) {
 
     auto head = this->_client->readLine();
     if(head != "HTTP/1.1 101 Switching Protocols\r\n") {
-        closeConnection();
+        close();
         return false;
     }
 
@@ -99,7 +99,7 @@ bool WebSocketsClient::connect(String host, int port) {
     
     auto parsedResponse = parseHandshakeResponse(serverResponseHeaders);
     if(parsedResponse.isSuccess == false || parsedResponse.serverAccept != handshake.expectedAcceptKey) {
-        closeConnection();
+        close();
         return false;
     }
 
@@ -142,10 +142,17 @@ void WebSocketsClient::sendBinary(String data) {
 }
 
 bool WebSocketsClient::available() {
-    this->_connectionOpen |= this->_client->available();
+    this->_connectionOpen &= this->_client->available();
     return _connectionOpen;
 }
 
+void WebSocketsClient::close() {
+    if(available()) {
+        this->_connectionOpen = false;
+        sendClosePacket();
+        WebSocketsEndpoint::close();
+    }
+}
 
 void WebSocketsClient::_handlePing(WebsocketsMessage) {
     // TODO handle ping
@@ -156,14 +163,12 @@ void WebSocketsClient::_handlePong(WebsocketsMessage) {
 }
 
 void WebSocketsClient::_handleClose(WebsocketsMessage) {
+    std::cout << "Got Close message" << std::endl;
     this->_connectionOpen = false;
 }
 
-void WebSocketsClient::closeConnection() {
-    if(available()) {
-        this->_connectionOpen = false;
-        WebSocketsEndpoint::close();
-    }
+void WebSocketsClient::sendClosePacket() {
+    WebSocketsEndpoint::send("", MessageType::Close);
 }
 
 WebSocketsClient::~WebSocketsClient() {
