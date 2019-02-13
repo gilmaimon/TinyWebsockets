@@ -17,12 +17,12 @@ namespace crypto {
     }
 
     String websocketsHandshakeEncodeKey(String key) {
-        char base64[50];
+        char base64[30];
         internals::sha1(key.c_str())
           .add("258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
           .finalize()
           .print_base64(base64);
-
+        
         return String(base64);
     }
 
