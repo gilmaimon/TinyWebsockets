@@ -16,10 +16,14 @@ namespace crypto {
       return internals::base64_decode(data);
     }
 
-    String sha1(String data) {
-        SHA1 checksum;
-        checksum.update(data);
-        return checksum.final();
+    String websocketsHandshakeEncodeKey(String key) {
+        char base64[50];
+        internals::sha1(key.c_str())
+          .add("258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
+          .finalize()
+          .print_base64(base64);
+
+        return String(base64);
     }
 
     String randomBytes(size_t len) {

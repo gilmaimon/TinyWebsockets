@@ -15,20 +15,16 @@ struct HandshakeRequestResult {
     String expectedAcceptKey;
 };
 HandshakeRequestResult generateHandshake(String uri) {
-    String randomBytes = crypto::randomBytes(16);
+    String key = crypto::base64Encode(crypto::randomBytes(16));
 
     String handshake = "GET " + uri + " HTTP/1.1\r\n";
     handshake += "Upgrade: websocket\r\n";
     handshake += "Connection: Upgrade\r\n";
-    handshake += "Sec-WebSocket-Key: " + crypto::base64Encode(randomBytes) + "\r\n";
+    handshake += "Sec-WebSocket-Key: " + key + "\r\n";
     handshake += "Sec-WebSocket-Version: 13\r\n";
     handshake += "\r\n";
 
-    String expectedAccept = crypto::base64Encode(
-        crypto::sha1(
-            crypto::base64Encode(randomBytes) + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-        )
-    );
+    String expectedAccept = crypto::websocketsHandshakeEncodeKey(key);
 
     HandshakeRequestResult result;
     result.requestStr = handshake;
@@ -83,8 +79,6 @@ bool WebSocketsClient::connect(String host, int port) {
     if (!this->_connectionOpen) return false;
 
     auto handshake = generateHandshake("/");
-    std::cout << "Sending handshake" << std::endl;
-    std::cout << handshake.requestStr;
     this->_client->send(handshake.requestStr);
 
 
@@ -105,9 +99,6 @@ bool WebSocketsClient::connect(String host, int port) {
     
     auto parsedResponse = parseHandshakeResponse(serverResponseHeaders);
     if(parsedResponse.isSuccess == false || parsedResponse.serverAccept != handshake.expectedAcceptKey) {
-        std::cout << "issucces: " << parsedResponse.isSuccess << std::endl;
-        std::cout << parsedResponse.serverAccept << std::endl;
-        std::cout << handshake.expectedAcceptKey << std::endl;
         closeConnection();
         return false;
     }
@@ -170,8 +161,6 @@ void WebSocketsClient::_handleClose(WebsocketsMessage) {
 
 void WebSocketsClient::closeConnection() {
     if(available()) {
-        std::cout << "closeConnection called" << std::endl;
-        //WebSocketsEndpoint::send("", MessageType::Close);
         this->_connectionOpen = false;
         WebSocketsEndpoint::close();
     }
