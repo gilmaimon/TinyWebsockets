@@ -2,7 +2,9 @@
 #include <string>
 #include <functional>
 
-typedef std::string String;
+namespace websockets {
+    typedef std::string String;
 
-class WebsocketsMessage;
-typedef std::function<void(WebsocketsMessage)> MessageCallback;
+    class WebsocketsMessage;
+    typedef std::function<void(WebsocketsMessage)> MessageCallback;
+}

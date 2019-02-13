@@ -4,7 +4,7 @@
 #include "crypto/base64.h"
 #include "crypto/sha1.h"
 
-namespace crypto {
+namespace websockets::crypto {
     String base64Encode(String data) {
       return internals::base64_encode((const unsigned char *) data.c_str(), data.size());
     }

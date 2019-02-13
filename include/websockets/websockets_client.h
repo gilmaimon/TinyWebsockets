@@ -1,33 +1,35 @@
 #pragma once
 
 #include "common.h"
-#include "tcp_client.h"
+#include "network/tcp_client.h"
 #include "websockets/data_frame.h"
 #include "websockets/websockets_endpoint.h"
 #include "websockets/message.h"
 
-class WebSocketsClient : private WebSocketsEndpoint {
-public:
-	WebSocketsClient(TcpClient* client);
+namespace websockets {
+	class WebSocketsClient : private internals::WebSocketsEndpoint {
+	public:
+		WebSocketsClient(network::TcpClient* client);
 
-	bool connect(String host, String path, int port);
-	void onMessage(MessageCallback callback);
-	void poll();
-	bool available(bool activeTest = false);
+		bool connect(String host, String path, int port);
+		void onMessage(MessageCallback callback);
+		void poll();
+		bool available(bool activeTest = false);
 
-	void send(String data);
-	void sendBinary(String data);
+		void send(String data);
+		void sendBinary(String data);
 
-	void close();
+		void close();
 
-	~WebSocketsClient();
+		~WebSocketsClient();
 
-private:
-	TcpClient* _client;
-	MessageCallback _callback;
-	bool _connectionOpen;
+	private:
+		network::TcpClient* _client;
+		MessageCallback _callback;
+		bool _connectionOpen;
 
-	void _handlePing(WebsocketsMessage);
-	void _handlePong(WebsocketsMessage);
-	void _handleClose(WebsocketsMessage);
-};
+		void _handlePing(WebsocketsMessage);
+		void _handlePong(WebsocketsMessage);
+		void _handleClose(WebsocketsMessage);
+	};
+}

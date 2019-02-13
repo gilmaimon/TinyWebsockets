@@ -1,9 +1,11 @@
 #include "websockets/websockets_client.h"
-#include "windows/win_tcp_client.h"
+#include "network/windows/win_tcp_client.h"
 #include <iostream>
 
+using namespace websockets;
+
 int main() {
-	WebSocketsClient client(new WinTcpClient);
+	WebSocketsClient client(new network::WinTcpClient);
 	client.connect("localhost", "/", 8080);
 
 	client.onMessage([&](WebsocketsMessage message){

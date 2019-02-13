@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-namespace crypto::internals {
+namespace websockets::crypto::internals {
 /* 
    base64.cpp and base64.h
 
