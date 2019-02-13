@@ -19,7 +19,10 @@ int main() {
 		
 		if(data.size() > 0) {
 			if(data == "exit") client.close();
-			else client.send(data);
+			else {
+				client.poll();
+				client.send(data);
+			}
 		}
 
 		client.poll();

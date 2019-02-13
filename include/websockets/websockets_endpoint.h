@@ -15,7 +15,7 @@ namespace websockets::internals {
         
         void ping(String msg = "");
         void pong(String msg = "");
-        void close();
+        void close(bool sendCloseFrame);
         virtual ~WebsocketsEndpoint();
     private:
         network::TcpSocket& _socket;

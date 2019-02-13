@@ -82,8 +82,6 @@ namespace websockets {
         auto handshake = generateHandshake(path);
         this->_client->send(handshake.requestStr);
 
-
-
         auto head = this->_client->readLine();
         if(head != "HTTP/1.1 101 Switching Protocols\r\n") {
             close();
@@ -112,21 +110,19 @@ namespace websockets {
     }
 
     void WebsocketsClient::poll() {
-        if(available() && !WebsocketsEndpoint::poll()) {
-            return;
-        }
-
-        auto frame = WebsocketsEndpoint::recv();
-        
-        auto msg = WebsocketsMessage::CreateFromFrame(frame);
-        if(msg.isBinary() || msg.isText()) {
-            this->_callback(std::move(msg));
-        } else if(msg.type() == MessageType::Ping) {
-            _handlePing(std::move(msg));
-        } else if(msg.type() == MessageType::Pong) {
-            _handlePong(std::move(msg));
-        } else if(msg.type() == MessageType::Close) {
-            _handleClose(std::move(msg));
+        while(available() && WebsocketsEndpoint::poll()) {
+            auto frame = WebsocketsEndpoint::recv();
+            
+            auto msg = WebsocketsMessage::CreateFromFrame(frame);
+            if(msg.isBinary() || msg.isText()) {
+                this->_callback(std::move(msg));
+            } else if(msg.type() == MessageType::Ping) {
+                _handlePing(std::move(msg));
+            } else if(msg.type() == MessageType::Pong) {
+                _handlePong(std::move(msg));
+            } else if(msg.type() == MessageType::Close) {
+                _handleClose(std::move(msg));
+            }
         }
     }
 
@@ -143,17 +139,17 @@ namespace websockets {
     }
 
     bool WebsocketsClient::available(bool activeTest) {
-        if(activeTest)  {
+        this->_connectionOpen &= this->_client->available();
+        if(this->_connectionOpen && activeTest)  {
             WebsocketsEndpoint::ping();
         }
-        this->_connectionOpen &= this->_client->available();
         return _connectionOpen;
     }
 
     void WebsocketsClient::close() {
         if(available()) {
             this->_connectionOpen = false;
-            WebsocketsEndpoint::close();
+            WebsocketsEndpoint::close(true);
         }
     }
 
@@ -166,7 +162,10 @@ namespace websockets {
     }
 
     void WebsocketsClient::_handleClose(WebsocketsMessage) {
-        close();
+        if(available()) {
+            this->_connectionOpen = false;
+            WebsocketsEndpoint::close(false);
+        }
     }
 
     WebsocketsClient::~WebsocketsClient() {

@@ -1,5 +1,6 @@
 #include "websockets/websockets_endpoint.h"
 #include <memory.h>
+#include <iostream>
 
 namespace websockets::internals {
     WebsocketsEndpoint::WebsocketsEndpoint(network::TcpSocket& socket) : _socket(socket) {
@@ -122,8 +123,8 @@ namespace websockets::internals {
         this->_socket.send(data);
     }
 
-    void WebsocketsEndpoint::close() {
-        send("", MessageType::Close);
+    void WebsocketsEndpoint::close(bool sendCloseFrame) {
+        if(sendCloseFrame) send("", MessageType::Close);
         this->_socket.close();
     }
 
