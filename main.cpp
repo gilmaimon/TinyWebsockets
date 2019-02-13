@@ -4,7 +4,7 @@
 
 int main() {
 	WebSocketsClient client(new WinTcpClient);
-	client.connect("localhost", 8080);
+	client.connect("localhost", "/", 8080);
 
 	client.onMessage([&](WebsocketsMessage message){
 		std::cout << "Got Data: " << message.data() << std::endl;

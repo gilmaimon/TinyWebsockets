@@ -10,7 +10,7 @@ class WebSocketsClient : private WebSocketsEndpoint {
 public:
 	WebSocketsClient(TcpClient* client);
 
-	bool connect(String host, int port);
+	bool connect(String host, String path, int port);
 	void onMessage(MessageCallback callback);
 	void poll();
 	bool available(bool activeTest = false);

@@ -74,11 +74,11 @@ HandshakeResponseResult parseHandshakeResponse(String responseHeaders) {
     return result;
 }
 
-bool WebSocketsClient::connect(String host, int port) {
+bool WebSocketsClient::connect(String host, String path, int port) {
     this->_connectionOpen = this->_client->connect(host, port);
     if (!this->_connectionOpen) return false;
 
-    auto handshake = generateHandshake("/");
+    auto handshake = generateHandshake(path);
     this->_client->send(handshake.requestStr);
 
 
