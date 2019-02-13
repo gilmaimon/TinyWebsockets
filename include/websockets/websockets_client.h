@@ -30,6 +30,4 @@ private:
 	void _handlePing(WebsocketsMessage);
 	void _handlePong(WebsocketsMessage);
 	void _handleClose(WebsocketsMessage);
-
-	void sendClosePacket();
 };

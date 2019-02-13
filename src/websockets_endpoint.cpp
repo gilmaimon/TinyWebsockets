@@ -122,7 +122,16 @@ void WebSocketsEndpoint::send(String data, uint8_t opcode, bool mask, uint8_t ma
 }
 
 void WebSocketsEndpoint::close() {
+    send("", MessageType::Close);
     this->_socket.close();
+}
+
+void WebSocketsEndpoint::pong(String msg) {
+    send(msg, MessageType::Ping);
+}
+
+void WebSocketsEndpoint::ping(String msg) {
+    send(msg, MessageType::Pong);
 }
 
 WebSocketsEndpoint::~WebSocketsEndpoint() {}

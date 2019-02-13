@@ -149,7 +149,6 @@ bool WebSocketsClient::available() {
 void WebSocketsClient::close() {
     if(available()) {
         this->_connectionOpen = false;
-        sendClosePacket();
         WebSocketsEndpoint::close();
     }
 }
@@ -163,12 +162,7 @@ void WebSocketsClient::_handlePong(WebsocketsMessage) {
 }
 
 void WebSocketsClient::_handleClose(WebsocketsMessage) {
-    std::cout << "Got Close message" << std::endl;
-    this->_connectionOpen = false;
-}
-
-void WebSocketsClient::sendClosePacket() {
-    WebSocketsEndpoint::send("", MessageType::Close);
+    close();
 }
 
 WebSocketsClient::~WebSocketsClient() {
