@@ -105,6 +105,9 @@ bool WebSocketsClient::connect(String host, int port) {
     
     auto parsedResponse = parseHandshakeResponse(serverResponseHeaders);
     if(parsedResponse.isSuccess == false || parsedResponse.serverAccept != handshake.expectedAcceptKey) {
+        std::cout << "issucces: " << parsedResponse.isSuccess << std::endl;
+        std::cout << parsedResponse.serverAccept << std::endl;
+        std::cout << handshake.expectedAcceptKey << std::endl;
         closeConnection();
         return false;
     }
@@ -117,7 +120,7 @@ void WebSocketsClient::onMessage(MessageCallback callback) {
 }
 
 void WebSocketsClient::poll() {
-    if(!WebSocketsEndpoint::poll()) {
+    if(available() && !WebSocketsEndpoint::poll()) {
         return;
     }
 
@@ -136,11 +139,15 @@ void WebSocketsClient::poll() {
 }
 
 void WebSocketsClient::send(String data) {
-    WebSocketsEndpoint::send(data, MessageType::Text);
+    if(available()) {
+        WebSocketsEndpoint::send(data, MessageType::Text);
+    }
 }
 
 void WebSocketsClient::sendBinary(String data) {
-    WebSocketsEndpoint::send(data, MessageType::Binary);
+    if(available()) {
+        WebSocketsEndpoint::send(data, MessageType::Binary);
+    }
 }
 
 bool WebSocketsClient::available() {
@@ -162,8 +169,12 @@ void WebSocketsClient::_handleClose(WebsocketsMessage) {
 }
 
 void WebSocketsClient::closeConnection() {
-    WebSocketsEndpoint::close();
-    this->_connectionOpen = false;
+    if(available()) {
+        std::cout << "closeConnection called" << std::endl;
+        //WebSocketsEndpoint::send("", MessageType::Close);
+        this->_connectionOpen = false;
+        WebSocketsEndpoint::close();
+    }
 }
 
 WebSocketsClient::~WebSocketsClient() {
