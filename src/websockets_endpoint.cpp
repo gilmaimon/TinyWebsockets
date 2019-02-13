@@ -121,4 +121,8 @@ void WebSocketsEndpoint::send(String data, uint8_t opcode, bool mask, uint8_t ma
     this->_socket.send(data);
 }
 
+void WebSocketsEndpoint::close() {
+    this->_socket.close();
+}
+
 WebSocketsEndpoint::~WebSocketsEndpoint() {}

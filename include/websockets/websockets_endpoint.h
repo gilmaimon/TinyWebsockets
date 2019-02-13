@@ -10,6 +10,7 @@ public:
     bool poll();
     WebsocketsFrame recv();
     void send(String data, uint8_t opcode, bool mask = false, uint8_t maskingKey[4] = nullptr);    
+    void close();
     virtual ~WebSocketsEndpoint();
 private:
     TcpSocket& _socket;

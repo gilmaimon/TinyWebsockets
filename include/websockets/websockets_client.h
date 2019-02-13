@@ -23,8 +23,11 @@ public:
 private:
 	TcpClient* _client;
 	MessageCallback _callback;
+	bool _connectionOpen;
 
 	void _handlePing(WebsocketsMessage);
 	void _handlePong(WebsocketsMessage);
 	void _handleClose(WebsocketsMessage);
+
+	void closeConnection();
 };

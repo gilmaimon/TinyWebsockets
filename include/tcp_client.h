@@ -8,6 +8,7 @@ struct TcpSocket {
 	virtual void send(uint8_t* data, uint32_t len) = 0;
 	virtual String readLine() = 0;
 	virtual void read(uint8_t* buffer, uint32_t len) = 0;
+	virtual void close() = 0;
 	virtual ~TcpSocket() {}
 };
 

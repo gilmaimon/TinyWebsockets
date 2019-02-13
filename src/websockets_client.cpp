@@ -6,7 +6,7 @@
 #include "crypto/crypto.h"
 #include <memory.h>
 
-WebSocketsClient::WebSocketsClient(TcpClient* client) : _client(client), WebSocketsEndpoint(*client) {
+WebSocketsClient::WebSocketsClient(TcpClient* client) : _client(client), WebSocketsEndpoint(*client), _connectionOpen(false) {
     // Empty
 }
 
@@ -37,7 +37,7 @@ HandshakeRequestResult generateHandshake(String uri) {
 }
 
 bool isWhitespace(char ch) {
-    return ch == ' ' || ch == '\t' || '\r' || '\n';
+    return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
 }
 
 struct HandshakeResponseResult {
@@ -52,7 +52,7 @@ HandshakeResponseResult parseHandshakeResponse(String responseHeaders) {
         String key = "", value = "";
         // read header key
         while(idx < responseHeaders.size() && responseHeaders[idx] != ':') key += responseHeaders[idx++];
-        
+
         // ignore ':' and whitespace
         ++idx;
         while(idx < responseHeaders.size() && isWhitespace(responseHeaders[idx])) idx++;
@@ -79,16 +79,19 @@ HandshakeResponseResult parseHandshakeResponse(String responseHeaders) {
 }
 
 bool WebSocketsClient::connect(String host, int port) {
-    bool connected = this->_client->connect(host, port);
-    if (!connected) return false;
+    this->_connectionOpen = this->_client->connect(host, port);
+    if (!this->_connectionOpen) return false;
 
     auto handshake = generateHandshake("/");
+    std::cout << "Sending handshake" << std::endl;
+    std::cout << handshake.requestStr;
     this->_client->send(handshake.requestStr);
+
 
 
     auto head = this->_client->readLine();
     if(head != "HTTP/1.1 101 Switching Protocols\r\n") {
-        //TODO indicate Error!!
+        closeConnection();
         return false;
     }
 
@@ -102,7 +105,7 @@ bool WebSocketsClient::connect(String host, int port) {
     
     auto parsedResponse = parseHandshakeResponse(serverResponseHeaders);
     if(parsedResponse.isSuccess == false || parsedResponse.serverAccept != handshake.expectedAcceptKey) {
-        // TODO indicate Error!!
+        closeConnection();
         return false;
     }
 
@@ -141,7 +144,8 @@ void WebSocketsClient::sendBinary(String data) {
 }
 
 bool WebSocketsClient::available() {
-    return this->_client->available();
+    this->_connectionOpen |= this->_client->available();
+    return _connectionOpen;
 }
 
 
@@ -154,7 +158,12 @@ void WebSocketsClient::_handlePong(WebsocketsMessage) {
 }
 
 void WebSocketsClient::_handleClose(WebsocketsMessage) {
-    //TODO handle close
+    this->_connectionOpen = false;
+}
+
+void WebSocketsClient::closeConnection() {
+    WebSocketsEndpoint::close();
+    this->_connectionOpen = false;
 }
 
 WebSocketsClient::~WebSocketsClient() {

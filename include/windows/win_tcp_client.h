@@ -14,6 +14,7 @@ public:
 	void send(uint8_t* data, uint32_t len) override;
 	String readLine() override;
 	void read(uint8_t* buffer, uint32_t len) override;
+	void close() override;
 	virtual ~WinTcpSocket();
 
 private:
@@ -48,6 +49,10 @@ public:
 
 	void read(uint8_t* buffer, uint32_t len) override {
 		socket.read(buffer, len);
+	}
+
+	void close() override {
+		socket.close();
 	}
 
 	virtual ~WinTcpClient() {}

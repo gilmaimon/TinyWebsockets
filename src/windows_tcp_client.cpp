@@ -152,7 +152,13 @@ String WinTcpSocket::readLine() {
 void WinTcpSocket::read(uint8_t* buffer, uint32_t len) {
     windowsTcpRecive(buffer, len, this->socket);
 }
+
+void WinTcpSocket::close() {
+	closesocket(socket);
+    // TODO WSA cleanup shouldnt be called multiple times?
+	WSACleanup();
+}
+
 WinTcpSocket::~WinTcpSocket() {
-    closesocket(socket);
-    WSACleanup();
+	close();
 }
