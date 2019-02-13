@@ -141,7 +141,10 @@ void WebSocketsClient::sendBinary(String data) {
     }
 }
 
-bool WebSocketsClient::available() {
+bool WebSocketsClient::available(bool activeTest) {
+    if(activeTest)  {
+        WebSocketsEndpoint::ping();
+    }
     this->_connectionOpen &= this->_client->available();
     return _connectionOpen;
 }

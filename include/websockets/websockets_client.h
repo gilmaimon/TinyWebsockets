@@ -13,7 +13,7 @@ public:
 	bool connect(String host, int port);
 	void onMessage(MessageCallback callback);
 	void poll();
-	bool available();
+	bool available(bool activeTest = false);
 
 	void send(String data);
 	void sendBinary(String data);
