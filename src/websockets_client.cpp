@@ -7,7 +7,7 @@
 #include <memory.h>
 
 namespace websockets {
-    WebSocketsClient::WebSocketsClient(network::TcpClient* client) : _client(client), WebSocketsEndpoint(*client), _connectionOpen(false) {
+    WebsocketsClient::WebsocketsClient(network::TcpClient* client) : _client(client), WebsocketsEndpoint(*client), _connectionOpen(false) {
         // Empty
     }
 
@@ -75,7 +75,7 @@ namespace websockets {
         return result;
     }
 
-    bool WebSocketsClient::connect(String host, String path, int port) {
+    bool WebsocketsClient::connect(String host, String path, int port) {
         this->_connectionOpen = this->_client->connect(host, port);
         if (!this->_connectionOpen) return false;
 
@@ -107,16 +107,16 @@ namespace websockets {
         return true;
     }
 
-    void WebSocketsClient::onMessage(MessageCallback callback) {
+    void WebsocketsClient::onMessage(MessageCallback callback) {
         this->_callback = callback;
     }
 
-    void WebSocketsClient::poll() {
-        if(available() && !WebSocketsEndpoint::poll()) {
+    void WebsocketsClient::poll() {
+        if(available() && !WebsocketsEndpoint::poll()) {
             return;
         }
 
-        auto frame = WebSocketsEndpoint::recv();
+        auto frame = WebsocketsEndpoint::recv();
         
         auto msg = WebsocketsMessage::CreateFromFrame(frame);
         if(msg.isBinary() || msg.isText()) {
@@ -130,46 +130,46 @@ namespace websockets {
         }
     }
 
-    void WebSocketsClient::send(String data) {
+    void WebsocketsClient::send(String data) {
         if(available()) {
-            WebSocketsEndpoint::send(data, MessageType::Text);
+            WebsocketsEndpoint::send(data, MessageType::Text);
         }
     }
 
-    void WebSocketsClient::sendBinary(String data) {
+    void WebsocketsClient::sendBinary(String data) {
         if(available()) {
-            WebSocketsEndpoint::send(data, MessageType::Binary);
+            WebsocketsEndpoint::send(data, MessageType::Binary);
         }
     }
 
-    bool WebSocketsClient::available(bool activeTest) {
+    bool WebsocketsClient::available(bool activeTest) {
         if(activeTest)  {
-            WebSocketsEndpoint::ping();
+            WebsocketsEndpoint::ping();
         }
         this->_connectionOpen &= this->_client->available();
         return _connectionOpen;
     }
 
-    void WebSocketsClient::close() {
+    void WebsocketsClient::close() {
         if(available()) {
             this->_connectionOpen = false;
-            WebSocketsEndpoint::close();
+            WebsocketsEndpoint::close();
         }
     }
 
-    void WebSocketsClient::_handlePing(WebsocketsMessage) {
+    void WebsocketsClient::_handlePing(WebsocketsMessage) {
         // TODO handle ping
     }
 
-    void WebSocketsClient::_handlePong(WebsocketsMessage) {
+    void WebsocketsClient::_handlePong(WebsocketsMessage) {
         // TODO handle pong
     }
 
-    void WebSocketsClient::_handleClose(WebsocketsMessage) {
+    void WebsocketsClient::_handleClose(WebsocketsMessage) {
         close();
     }
 
-    WebSocketsClient::~WebSocketsClient() {
+    WebsocketsClient::~WebsocketsClient() {
         delete this->_client;
     }
 }

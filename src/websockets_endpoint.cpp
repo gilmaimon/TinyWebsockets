@@ -2,11 +2,11 @@
 #include <memory.h>
 
 namespace websockets::internals {
-    WebSocketsEndpoint::WebSocketsEndpoint(network::TcpSocket& socket) : _socket(socket) {
+    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpSocket& socket) : _socket(socket) {
         // Empty
     }
 
-    bool WebSocketsEndpoint::poll() {
+    bool WebsocketsEndpoint::poll() {
         return this->_socket.poll();
     }
 
@@ -62,7 +62,7 @@ namespace websockets::internals {
         }
     }
 
-    WebsocketsFrame WebSocketsEndpoint::recv() {
+    WebsocketsFrame WebsocketsEndpoint::recv() {
         auto header = readHeaderFromSocket(this->_socket);
         uint64_t payloadLength = readExtendedPayloadLength(this->_socket, header);
         
@@ -91,7 +91,7 @@ namespace websockets::internals {
         return frame;
     }
 
-    void WebSocketsEndpoint::send(String data, uint8_t opcode, bool mask, uint8_t maskingKey[4]) {
+    void WebsocketsEndpoint::send(String data, uint8_t opcode, bool mask, uint8_t maskingKey[4]) {
         Header header;
         header.fin = 1;
         header.flags = 0b000;
@@ -122,18 +122,18 @@ namespace websockets::internals {
         this->_socket.send(data);
     }
 
-    void WebSocketsEndpoint::close() {
+    void WebsocketsEndpoint::close() {
         send("", MessageType::Close);
         this->_socket.close();
     }
 
-    void WebSocketsEndpoint::pong(String msg) {
+    void WebsocketsEndpoint::pong(String msg) {
         send(msg, MessageType::Ping);
     }
 
-    void WebSocketsEndpoint::ping(String msg) {
+    void WebsocketsEndpoint::ping(String msg) {
         send(msg, MessageType::Pong);
     }
 
-    WebSocketsEndpoint::~WebSocketsEndpoint() {}
+    WebsocketsEndpoint::~WebsocketsEndpoint() {}
 }

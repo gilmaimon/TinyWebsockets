@@ -5,7 +5,7 @@
 using namespace websockets;
 
 int main() {
-	WebSocketsClient client(new network::WinTcpClient);
+	WebsocketsClient client(new network::WinTcpClient);
 	client.connect("localhost", "/", 8080);
 
 	client.onMessage([&](WebsocketsMessage message){

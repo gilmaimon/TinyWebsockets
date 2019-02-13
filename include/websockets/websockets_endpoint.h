@@ -6,9 +6,9 @@
 #include "websockets/message.h"
 
 namespace websockets::internals {
-    class WebSocketsEndpoint {
+    class WebsocketsEndpoint {
     public:
-        WebSocketsEndpoint(network::TcpSocket& socket);
+        WebsocketsEndpoint(network::TcpSocket& socket);
         bool poll();
         WebsocketsFrame recv();
         void send(String data, uint8_t opcode, bool mask = false, uint8_t maskingKey[4] = nullptr);    
@@ -16,7 +16,7 @@ namespace websockets::internals {
         void ping(String msg = "");
         void pong(String msg = "");
         void close();
-        virtual ~WebSocketsEndpoint();
+        virtual ~WebsocketsEndpoint();
     private:
         network::TcpSocket& _socket;
     };

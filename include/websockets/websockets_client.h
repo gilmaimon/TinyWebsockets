@@ -7,9 +7,9 @@
 #include "websockets/message.h"
 
 namespace websockets {
-	class WebSocketsClient : private internals::WebSocketsEndpoint {
+	class WebsocketsClient : private internals::WebsocketsEndpoint {
 	public:
-		WebSocketsClient(network::TcpClient* client);
+		WebsocketsClient(network::TcpClient* client);
 
 		bool connect(String host, String path, int port);
 		void onMessage(MessageCallback callback);
@@ -21,7 +21,7 @@ namespace websockets {
 
 		void close();
 
-		~WebSocketsClient();
+		~WebsocketsClient();
 
 	private:
 		network::TcpClient* _client;
