@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <string.h>
 
+/*
+    CREDIT: this implementation is from https://github.com/983/SHA1
+*/
 namespace crypto::internals {
 #define SHA1_HEX_SIZE (40 + 1)
 #define SHA1_BASE64_SIZE (28 + 1)
