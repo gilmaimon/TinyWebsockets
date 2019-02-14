@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "ws_common.h"
 #include "network/tcp_socket.h"
 
 namespace websockets { namespace network {

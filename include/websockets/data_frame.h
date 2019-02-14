@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "ws_common.h"
 
 namespace websockets { namespace internals {
 	struct WebsocketsFrame {

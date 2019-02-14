@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "ws_common.h"
 #include "network/tcp_client.h"
 #include "websockets/data_frame.h"
 #include "websockets/message.h"

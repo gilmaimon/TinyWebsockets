@@ -2,7 +2,7 @@
 
 #ifdef _WIN32 
 
-#include "common.h"
+#include "ws_common.h"
 #include "network/tcp_client.h"
 
 #include <windows.h>
