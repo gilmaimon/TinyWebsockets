@@ -1,5 +1,7 @@
 #include "network/windows/win_tcp_client.h"
 
+#ifdef _WIN32
+
 #define WIN32_LEAN_AND_MEAN
 
 #undef _WIN32_WINNT
@@ -11,7 +13,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-namespace websockets::network {
+namespace websockets { namespace network {
 	// Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 	#pragma comment (lib, "Ws2_32.lib")
 	#pragma comment (lib, "Mswsock.lib")
@@ -153,4 +155,6 @@ namespace websockets::network {
 	WinTcpSocket::~WinTcpSocket() {
 		close();
 	}
-}
+}} // websockets::network
+
+#endif // #ifdef _WIN32

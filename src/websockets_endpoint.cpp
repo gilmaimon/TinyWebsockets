@@ -1,8 +1,6 @@
 #include "websockets/websockets_endpoint.h"
-#include <memory.h>
-#include <iostream>
 
-namespace websockets::internals {
+namespace websockets { namespace internals {
     WebsocketsEndpoint::WebsocketsEndpoint(network::TcpSocket& socket) : _socket(socket) {
         // Empty
     }
@@ -85,7 +83,12 @@ namespace websockets::internals {
         WebsocketsFrame frame;
         frame.fin = header.fin;
         frame.mask = header.mask;
-        memcpy(frame.mask_buf, maskingKey, 4);
+
+        frame.mask_buf[0] = maskingKey[0];
+        frame.mask_buf[1] = maskingKey[1];
+        frame.mask_buf[2] = maskingKey[2];
+        frame.mask_buf[3] = maskingKey[3];
+
         frame.opcode = header.opcode;
         frame.payload_length = payloadLength;
         frame.payload = data;
@@ -137,4 +140,4 @@ namespace websockets::internals {
     }
 
     WebsocketsEndpoint::~WebsocketsEndpoint() {}
-}
+}} // websockets::internals

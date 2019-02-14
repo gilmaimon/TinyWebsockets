@@ -4,7 +4,7 @@
 #include "crypto/base64.h"
 #include "crypto/sha1.h"
 
-namespace websockets::crypto {
+namespace websockets { namespace crypto {
     WSString base64Encode(WSString data) {
       return internals::base64_encode((const unsigned char *) data.c_str(), data.size());
     }
@@ -33,4 +33,4 @@ namespace websockets::crypto {
       }
       return "";
     }
-}
+}} // websockets::crypto

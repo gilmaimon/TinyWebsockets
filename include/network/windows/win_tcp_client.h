@@ -1,10 +1,12 @@
 #pragma once
 
+#ifdef _WIN32 
+
 #include "common.h"
 #include "network/tcp_client.h"
 #include "network/windows/win_tcp_socket.h"
 
-namespace websockets::network {
+namespace websockets { namespace network {
 	class WinTcpClient : public TcpClient {
 	public:
 		bool connect(WSString host, int port) {
@@ -43,4 +45,6 @@ namespace websockets::network {
 	private:
 		WinTcpSocket socket;
 	};
-}
+}} // websockets::network
+
+#endif // #ifdef _WIN32 

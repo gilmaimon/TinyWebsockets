@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-namespace websockets::crypto::internals {
+namespace websockets { namespace crypto { namespace internals {
 /* 
    base64.cpp and base64.h
 
@@ -122,4 +122,5 @@ WSString base64_decode(WSString const& encoded_string) {
 
   return ret;
 }
-}
+
+}}} // websockets::crypto::internals

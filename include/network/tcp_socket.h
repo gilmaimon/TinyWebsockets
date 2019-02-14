@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-namespace websockets::network {
+namespace websockets { namespace network {
     struct TcpSocket {
         virtual bool available() = 0;
         virtual bool poll() = 0;
@@ -13,4 +13,4 @@ namespace websockets::network {
         virtual void close() = 0;
         virtual ~TcpSocket() {}
     };
-}
+}} // websockets::network

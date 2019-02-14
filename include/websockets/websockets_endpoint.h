@@ -5,7 +5,7 @@
 #include "websockets/data_frame.h"
 #include "websockets/message.h"
 
-namespace websockets::internals {
+namespace websockets { namespace internals {
     class WebsocketsEndpoint {
     public:
         WebsocketsEndpoint(network::TcpSocket& socket);
@@ -20,4 +20,4 @@ namespace websockets::internals {
     private:
         network::TcpSocket& _socket;
     };
-}
+}} // websockets::internals

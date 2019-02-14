@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-namespace websockets::internals {
+namespace websockets { namespace internals {
 	struct WebsocketsFrame {
 		uint8_t fin : 1;
 		uint8_t opcode : 4;
@@ -19,4 +19,4 @@ namespace websockets::internals {
 		uint8_t payload : 7;
 		uint8_t mask : 1;
 	};
-}
+}} // websockets::internals
