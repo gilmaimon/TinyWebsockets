@@ -17,7 +17,7 @@ namespace websockets::network {
 	#pragma comment (lib, "Mswsock.lib")
 	#pragma comment (lib, "AdvApi32.lib")
 
-	SOCKET windowsTcpConnect(String host, int port) {
+	SOCKET windowsTcpConnect(WSString host, int port) {
 		WSADATA wsaData;
 		SOCKET connectSocket = INVALID_SOCKET;
 		struct addrinfo *result = NULL,
@@ -92,7 +92,7 @@ namespace websockets::network {
 		}
 	}
 
-	bool WinTcpSocket::connect(String host, int port) {
+	bool WinTcpSocket::connect(WSString host, int port) {
 		this->socket = windowsTcpConnect(host, port);
 		return available();
 	}
@@ -113,7 +113,7 @@ namespace websockets::network {
 		return socket != INVALID_SOCKET;
 	}
 
-	void WinTcpSocket::send(String data) {
+	void WinTcpSocket::send(WSString data) {
 		this->send((uint8_t*) data.c_str(), data.size());
 	}
 
@@ -122,9 +122,9 @@ namespace websockets::network {
 		if(error) close();
 	}
 
-	String WinTcpSocket::readLine() {
+	WSString WinTcpSocket::readLine() {
 		uint8_t byte = '0';
-		String line;
+		WSString line;
 		auto error = windowsTcpRecive(&byte, 1, this->socket);
 		while (!error) {
 			line += (char)byte;

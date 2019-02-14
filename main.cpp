@@ -12,7 +12,7 @@ int main() {
 		std::cout << "Got Data: " << message.data() << std::endl;
 	});
 
-	String data;
+	WSString data;
 	while(client.available()) {
 		std::cout << "Enter input: ";
 		std::getline(std::cin, data);

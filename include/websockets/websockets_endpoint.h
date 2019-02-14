@@ -11,10 +11,10 @@ namespace websockets::internals {
         WebsocketsEndpoint(network::TcpSocket& socket);
         bool poll();
         WebsocketsFrame recv();
-        void send(String data, uint8_t opcode, bool mask = false, uint8_t maskingKey[4] = nullptr);    
+        void send(WSString data, uint8_t opcode, bool mask = false, uint8_t maskingKey[4] = nullptr);    
         
-        void ping(String msg = "");
-        void pong(String msg = "");
+        void ping(WSString msg = "");
+        void pong(WSString msg = "");
         void close(bool sendCloseFrame);
         virtual ~WebsocketsEndpoint();
     private:

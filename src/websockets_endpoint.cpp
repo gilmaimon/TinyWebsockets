@@ -39,10 +39,10 @@ namespace websockets::internals {
         socket.read((uint8_t*)outputBuffer, 4);
     }
 
-    String readData(network::TcpSocket& socket, uint64_t extendedPayload) {
+    WSString readData(network::TcpSocket& socket, uint64_t extendedPayload) {
         const uint64_t BUFFER_SIZE = 64;
 
-        String data = "";
+        WSString data = "";
         uint8_t buffer[BUFFER_SIZE];
         uint64_t done_reading = 0;
         while (done_reading < extendedPayload) {
@@ -57,7 +57,7 @@ namespace websockets::internals {
         return data;
     }
 
-    String remaskData(String& data, const uint8_t* const maskingKey, uint64_t payloadLength) {
+    WSString remaskData(WSString& data, const uint8_t* const maskingKey, uint64_t payloadLength) {
         for (int i = 0; i < payloadLength; i++) {
             data[i] = data[i] ^ maskingKey[i % 4];
         }
@@ -74,7 +74,7 @@ namespace websockets::internals {
         }
 
         // read the message's payload (data) according to the read length
-        String data = readData(this->_socket, payloadLength);
+        WSString data = readData(this->_socket, payloadLength);
 
         // if masking is set un-mask the message
         if (header.mask) {
@@ -92,7 +92,7 @@ namespace websockets::internals {
         return frame;
     }
 
-    void WebsocketsEndpoint::send(String data, uint8_t opcode, bool mask, uint8_t maskingKey[4]) {
+    void WebsocketsEndpoint::send(WSString data, uint8_t opcode, bool mask, uint8_t maskingKey[4]) {
         Header header;
         header.fin = 1;
         header.flags = 0b000;
@@ -128,11 +128,11 @@ namespace websockets::internals {
         this->_socket.close();
     }
 
-    void WebsocketsEndpoint::pong(String msg) {
+    void WebsocketsEndpoint::pong(WSString msg) {
         send(msg, MessageType::Ping);
     }
 
-    void WebsocketsEndpoint::ping(String msg) {
+    void WebsocketsEndpoint::ping(WSString msg) {
         send(msg, MessageType::Pong);
     }
 

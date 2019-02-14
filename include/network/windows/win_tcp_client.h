@@ -7,7 +7,7 @@
 namespace websockets::network {
 	class WinTcpClient : public TcpClient {
 	public:
-		bool connect(String host, int port) {
+		bool connect(WSString host, int port) {
 			return socket.connect(host, port);
 		}
 
@@ -19,7 +19,7 @@ namespace websockets::network {
 			return socket.available();
 		}
 
-		void send(String data) override {
+		void send(WSString data) override {
 			socket.send(data);
 		}
 
@@ -27,7 +27,7 @@ namespace websockets::network {
 			socket.send(data, len);
 		}
 		
-		String readLine() override {
+		WSString readLine() override {
 			return socket.readLine();
 		}
 

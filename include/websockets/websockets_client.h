@@ -5,19 +5,22 @@
 #include "websockets/data_frame.h"
 #include "websockets/websockets_endpoint.h"
 #include "websockets/message.h"
+#include <functional>
 
 namespace websockets {
+    typedef std::function<void(WebsocketsMessage)> MessageCallback;
+
 	class WebsocketsClient : private internals::WebsocketsEndpoint {
 	public:
 		WebsocketsClient(network::TcpClient* client);
 
-		bool connect(String host, String path, int port);
+		bool connect(WSString host, WSString path, int port);
 		void onMessage(MessageCallback callback);
 		void poll();
 		bool available(bool activeTest = false);
 
-		void send(String data);
-		void sendBinary(String data);
+		void send(WSString data);
+		void sendBinary(WSString data);
 
 		void close();
 

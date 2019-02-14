@@ -18,11 +18,11 @@ namespace websockets {
     // The class the user will interact with as a message
     // This message can be partial (so practically this is a Frame and not a message)
     struct WebsocketsMessage {
-        WebsocketsMessage(MessageType type, String data, bool fragmented = false) : _type(type), _data(data), _fragmented(fragmented) {}
-        static WebsocketsMessage CreateBinary(String data, bool partial = false) {
+        WebsocketsMessage(MessageType type, WSString data, bool fragmented = false) : _type(type), _data(data), _fragmented(fragmented) {}
+        static WebsocketsMessage CreateBinary(WSString data, bool partial = false) {
             return WebsocketsMessage(MessageType::Binary, data, partial);
         }
-        static WebsocketsMessage CreateText(String data, bool partial = false) {
+        static WebsocketsMessage CreateText(WSString data, bool partial = false) {
             return WebsocketsMessage(MessageType::Text, data, partial);
         }
 
@@ -38,13 +38,13 @@ namespace websockets {
         bool isBinary() const { return this->_type == MessageType::Binary; }
 
         MessageType type() const { return this->_type; }
-        String data() const { return this->_data; }
+        WSString data() const { return this->_data; }
 
         bool isFragmented() const { return this->_fragmented; }
 
     private:
         MessageType _type;
-        String _data;
+        WSString _data;
         bool _fragmented;
     };
 }

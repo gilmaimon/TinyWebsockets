@@ -12,20 +12,20 @@ namespace websockets {
     }
 
     struct HandshakeRequestResult {
-        String requestStr;
-        String expectedAcceptKey;
+        WSString requestStr;
+        WSString expectedAcceptKey;
     };
-    HandshakeRequestResult generateHandshake(String uri) {
-        String key = crypto::base64Encode(crypto::randomBytes(16));
+    HandshakeRequestResult generateHandshake(WSString uri) {
+        WSString key = crypto::base64Encode(crypto::randomBytes(16));
 
-        String handshake = "GET " + uri + " HTTP/1.1\r\n";
+        WSString handshake = "GET " + uri + " HTTP/1.1\r\n";
         handshake += "Upgrade: websocket\r\n";
         handshake += "Connection: Upgrade\r\n";
         handshake += "Sec-WebSocket-Key: " + key + "\r\n";
         handshake += "Sec-WebSocket-Version: 13\r\n";
         handshake += "\r\n";
 
-        String expectedAccept = crypto::websocketsHandshakeEncodeKey(key);
+        WSString expectedAccept = crypto::websocketsHandshakeEncodeKey(key);
 
         HandshakeRequestResult result;
         result.requestStr = handshake;
@@ -39,14 +39,14 @@ namespace websockets {
 
     struct HandshakeResponseResult {
         bool isSuccess;
-        String serverAccept;
+        WSString serverAccept;
     };
-    HandshakeResponseResult parseHandshakeResponse(String responseHeaders) {
+    HandshakeResponseResult parseHandshakeResponse(WSString responseHeaders) {
         bool didUpgradeToWebsockets = false, isConnectionUpgraded = false;
-        String serverAccept = "";
+        WSString serverAccept = "";
         size_t idx = 0;
         while(idx < responseHeaders.size()) {
-            String key = "", value = "";
+            WSString key = "", value = "";
             // read header key
             while(idx < responseHeaders.size() && responseHeaders[idx] != ':') key += responseHeaders[idx++];
 
@@ -75,7 +75,7 @@ namespace websockets {
         return result;
     }
 
-    bool WebsocketsClient::connect(String host, String path, int port) {
+    bool WebsocketsClient::connect(WSString host, WSString path, int port) {
         this->_connectionOpen = this->_client->connect(host, port);
         if (!this->_connectionOpen) return false;
 
@@ -88,8 +88,8 @@ namespace websockets {
             return false;
         }
 
-        String serverResponseHeaders = "";
-        String line = "";
+        WSString serverResponseHeaders = "";
+        WSString line = "";
         while (true) {
             line = this->_client->readLine();
             serverResponseHeaders += line;
@@ -126,13 +126,13 @@ namespace websockets {
         }
     }
 
-    void WebsocketsClient::send(String data) {
+    void WebsocketsClient::send(WSString data) {
         if(available()) {
             WebsocketsEndpoint::send(data, MessageType::Text);
         }
     }
 
-    void WebsocketsClient::sendBinary(String data) {
+    void WebsocketsClient::sendBinary(WSString data) {
         if(available()) {
             WebsocketsEndpoint::send(data, MessageType::Binary);
         }

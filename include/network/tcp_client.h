@@ -5,6 +5,6 @@
 
 namespace websockets::network {
 	struct TcpClient : public TcpSocket {
-		virtual bool connect(String host, int port) = 0;
+		virtual bool connect(WSString host, int port) = 0;
 	};
 }

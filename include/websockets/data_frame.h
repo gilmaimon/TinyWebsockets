@@ -9,7 +9,7 @@ namespace websockets::internals {
 		uint8_t mask : 1;
 		uint8_t mask_buf[4];
 		uint64_t payload_length;
-		String payload;
+		WSString payload;
 	};
 
 	struct Header {
