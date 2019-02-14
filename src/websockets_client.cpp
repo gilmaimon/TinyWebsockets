@@ -3,7 +3,7 @@
 #include "websockets/data_frame.h"
 #include "websockets/message.h"
 #include "websockets/websockets_client.h"
-#include "crypto/crypto.h"
+#include "wscrypto/crypto.h"
 
 namespace websockets {
     WebsocketsClient::WebsocketsClient(network::TcpClient* client) : _client(client), WebsocketsEndpoint(*client), _connectionOpen(false) {
