@@ -78,7 +78,7 @@ namespace websockets {
         return result;
     }
 
-    bool WebsocketsClient::connect(WSString host, WSString path, int port) {
+    bool WebsocketsClient::connect(WSString host, int port, WSString path) {
         this->_connectionOpen = this->_client->connect(host, port);
         if (!this->_connectionOpen) return false;
 

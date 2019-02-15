@@ -6,7 +6,7 @@ using namespace websockets;
 
 int main() {
 	WebsocketsClient client(new network::WinTcpClient);
-	client.connect("localhost", "/", 8080);
+	client.connect("localhost", 8080, "/");
 
 	client.onMessage([&](WebsocketsMessage message){
 		std::cout << "Got Data: " << message.data() << std::endl;

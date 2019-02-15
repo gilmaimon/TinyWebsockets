@@ -14,7 +14,7 @@ namespace websockets {
 	public:
 		WebsocketsClient(network::TcpClient* client);
 
-		bool connect(WSString host, WSString path, int port);
+		bool connect(WSString host, int port, WSString path);
 		void onMessage(MessageCallback callback);
 		void poll();
 		bool available(bool activeTest = false);
