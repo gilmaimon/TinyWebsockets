@@ -1,0 +1,4 @@
+#pragma once
+
+//#define _WS_CONFIG_TRUE_RANDOMNESS
+#define _WS_CONFIG_VALIDATE_HANDSHAKE_ACCEPT
