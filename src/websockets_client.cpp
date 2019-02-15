@@ -176,6 +176,7 @@ namespace websockets {
     }
 
     void WebsocketsClient::_handlePing(WebsocketsMessage message) {
+        WebsocketsEndpoint::pong(message.data());
         this->_eventsCallback(WebsocketsEvent::GotPing, message.data());
     }
 
