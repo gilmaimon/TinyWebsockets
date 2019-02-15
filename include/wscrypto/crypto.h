@@ -4,7 +4,7 @@
 #include "wscrypto/base64.h"
 #include "wscrypto/sha1.h"
 
-#ifdef _WS_CONFIG_TRUE_RANDOMNESS
+#ifndef _WS_CONFIG_NO_TRUE_RANDOMNESS
 #include <time.h>
 #endif
 
@@ -30,7 +30,18 @@ namespace websockets { namespace crypto {
       return WSString(base64);
   }
 
-#ifdef _WS_CONFIG_TRUE_RANDOMNESS
+#ifdef _WS_CONFIG_NO_TRUE_RANDOMNESS
+  WSString randomBytes(size_t len) {
+    WSString result;
+    result.reserve(len);
+
+    for(size_t i = 0; i < len; i++) {
+      result += "0123456789abcdef"[i % 16];
+    }
+
+    return result;
+  }
+#else
   WSString randomBytes(size_t len) {
     srand(time(NULL));
 
@@ -40,17 +51,6 @@ namespace websockets { namespace crypto {
     for(size_t i = 0; i < len; i++) {
       result += "0123456789abcdefABCDEFGHIJKLMNOPQRSTUVEXYZ"[rand() % 42];
     }
-    return result;
-  }
-#else
-  WSString randomBytes(size_t len) {
-    WSString result;
-    result.reserve(len);
-
-    for(size_t i = 0; i < len; i++) {
-      result += "0123456789abcdef"[i % 16];
-    }
-
     return result;
   }
 #endif
