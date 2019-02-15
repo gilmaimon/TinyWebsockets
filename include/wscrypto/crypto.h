@@ -6,10 +6,10 @@
 
 namespace websockets { namespace crypto {
     WSString base64Encode(WSString data) {
-      return internals::base64_encode((const unsigned char *) data.c_str(), data.size());
+      return internals::base64_encode(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
     }
     WSString base64Encode(uint8_t* data, size_t len) {
-      return internals::base64_encode((const unsigned char *) data, len);
+      return internals::base64_encode(reinterpret_cast<const uint8_t*>(data), len);
     }
     
     WSString base64Decode(WSString data) {
@@ -29,7 +29,7 @@ namespace websockets { namespace crypto {
     WSString randomBytes(size_t len) {
       // TODO: fix dummy implementation (16 is the number of websockets key length for handshakes)
       if(len == 16) {
-        return "1234567890123456";
+        return "0123456789abcdef";
       }
       return "";
     }

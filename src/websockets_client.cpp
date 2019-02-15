@@ -4,9 +4,13 @@
 #include "websockets/message.h"
 #include "websockets/websockets_client.h"
 #include "wscrypto/crypto.h"
+#include <iostream>
 
 namespace websockets {
-    WebsocketsClient::WebsocketsClient(network::TcpClient* client) : _client(client), WebsocketsEndpoint(*client), _connectionOpen(false) {
+    WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
+        WebsocketsEndpoint(*client), 
+        _client(client), 
+        _connectionOpen(false) {
         // Empty
     }
 
