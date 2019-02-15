@@ -8,19 +8,31 @@
 #include <functional>
 
 namespace websockets {
+	enum class WebsocketsEvent {
+		ConnectionOpened,
+		ConnectionClosed,
+		GotPing, GotPong
+	};
     typedef std::function<void(WebsocketsMessage)> MessageCallback;
+    typedef std::function<void(WebsocketsEvent, WSString data)> EventCallback;
 
 	class WebsocketsClient : private internals::WebsocketsEndpoint {
 	public:
 		WebsocketsClient(network::TcpClient* client);
 
 		bool connect(WSString host, int port, WSString path);
+
 		void onMessage(MessageCallback callback);
+		void onEvent(EventCallback callback);
+
 		void poll();
 		bool available(bool activeTest = false);
 
 		void send(WSString data);
 		void sendBinary(WSString data);
+
+		void ping(WSString data = "");
+		void pong(WSString data = "");
 
 		void close();
 
@@ -28,7 +40,8 @@ namespace websockets {
 
 	private:
 		network::TcpClient* _client;
-		MessageCallback _callback;
+		MessageCallback _messagesCallback;
+		EventCallback _eventsCallback;
 		bool _connectionOpen;
 
 		void _handlePing(WebsocketsMessage);

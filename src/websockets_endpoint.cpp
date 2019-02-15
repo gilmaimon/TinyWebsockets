@@ -132,11 +132,11 @@ namespace websockets { namespace internals {
     }
 
     void WebsocketsEndpoint::pong(WSString msg) {
-        send(msg, MessageType::Ping);
+        send(msg, MessageType::Pong);
     }
 
     void WebsocketsEndpoint::ping(WSString msg) {
-        send(msg, MessageType::Pong);
+        send(msg, MessageType::Ping);
     }
 
     WebsocketsEndpoint::~WebsocketsEndpoint() {}

@@ -111,11 +111,16 @@ namespace websockets {
             return false;
         }
 
+        this->_eventsCallback(WebsocketsEvent::ConnectionOpened, "");
         return true;
     }
 
     void WebsocketsClient::onMessage(MessageCallback callback) {
-        this->_callback = callback;
+        this->_messagesCallback = callback;
+    }
+
+    void WebsocketsClient::onEvent(EventCallback callback) {
+        this->_eventsCallback = callback;
     }
 
     void WebsocketsClient::poll() {
@@ -124,7 +129,7 @@ namespace websockets {
             
             auto msg = WebsocketsMessage::CreateFromFrame(frame);
             if(msg.isBinary() || msg.isText()) {
-                this->_callback(std::move(msg));
+                this->_messagesCallback(std::move(msg));
             } else if(msg.type() == MessageType::Ping) {
                 _handlePing(std::move(msg));
             } else if(msg.type() == MessageType::Pong) {
@@ -155,6 +160,14 @@ namespace websockets {
         return _connectionOpen;
     }
 
+    void WebsocketsClient::ping(WSString data) {
+        WebsocketsEndpoint::ping(data);
+    }
+
+    void WebsocketsClient::pong(WSString data) {
+        WebsocketsEndpoint::pong(data);
+    }
+
     void WebsocketsClient::close() {
         if(available()) {
             this->_connectionOpen = false;
@@ -162,15 +175,16 @@ namespace websockets {
         }
     }
 
-    void WebsocketsClient::_handlePing(WebsocketsMessage) {
-        // TODO handle ping
+    void WebsocketsClient::_handlePing(WebsocketsMessage message) {
+        this->_eventsCallback(WebsocketsEvent::GotPing, message.data());
     }
 
-    void WebsocketsClient::_handlePong(WebsocketsMessage) {
-        // TODO handle pong
+    void WebsocketsClient::_handlePong(WebsocketsMessage message) {
+        this->_eventsCallback(WebsocketsEvent::GotPong, message.data());
     }
 
-    void WebsocketsClient::_handleClose(WebsocketsMessage) {
+    void WebsocketsClient::_handleClose(WebsocketsMessage message) {
+        this->_eventsCallback(WebsocketsEvent::ConnectionClosed, message.data());
         if(available()) {
             this->_connectionOpen = false;
             WebsocketsEndpoint::close(false);
