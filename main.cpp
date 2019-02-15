@@ -3,9 +3,10 @@
 #include <iostream>
 
 using namespace websockets;
+using network::WinTcpClient;
 
 int main() {
-	WebsocketsClient client(new network::WinTcpClient);
+	auto client = WebsocketsClient::Create<WinTcpClient>();
 
 	client.onMessage([&](WebsocketsMessage message){
 		std::cout << "Got Data: " << message.data() << std::endl;

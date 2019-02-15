@@ -19,6 +19,11 @@ namespace websockets {
 	class WebsocketsClient : private internals::WebsocketsEndpoint {
 	public:
 		WebsocketsClient(network::TcpClient* client);
+		
+		template <class TcpClientTy>
+		static WebsocketsClient Create(TcpClientTy* clientPtr = new TcpClientTy) {
+			return WebsocketsClient(clientPtr);
+		}
 
 		bool connect(WSString host, int port, WSString path);
 
