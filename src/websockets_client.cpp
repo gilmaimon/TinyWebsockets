@@ -28,11 +28,11 @@ namespace websockets {
         handshake += "Sec-WebSocket-Version: 13\r\n";
         handshake += "\r\n";
 
-        WSString expectedAccept = crypto::websocketsHandshakeEncodeKey(key);
-
         HandshakeRequestResult result;
         result.requestStr = handshake;
-        result.expectedAcceptKey = expectedAccept;
+#ifndef _WS_CONFIG_SKIP_HANDSHAKE_ACCEPT_VALIDATION
+        result.expectedAcceptKey = crypto::websocketsHandshakeEncodeKey(key);
+#endif
         return std::move(result);
     }
 
@@ -98,9 +98,15 @@ namespace websockets {
             serverResponseHeaders += line;
             if (line == "\r\n") break;
         }
-        
+
         auto parsedResponse = parseHandshakeResponse(serverResponseHeaders);
-        if(parsedResponse.isSuccess == false || parsedResponse.serverAccept != handshake.expectedAcceptKey) {
+        
+#ifdef _WS_CONFIG_SKIP_HANDSHAKE_ACCEPT_VALIDATION
+        bool serverAcceptMismatch = false;
+#else
+        bool serverAcceptMismatch = parsedResponse.serverAccept != handshake.expectedAcceptKey;
+#endif
+        if(parsedResponse.isSuccess == false || serverAcceptMismatch) {
             close();
             return false;
         }
