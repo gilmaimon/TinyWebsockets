@@ -30,14 +30,14 @@ namespace websockets {
 		void onMessage(MessageCallback callback);
 		void onEvent(EventCallback callback);
 
-		void poll();
+		bool poll();
 		bool available(bool activeTest = false);
 
-		void send(WSString data);
-		void sendBinary(WSString data);
+		bool send(WSString data);
+		bool sendBinary(WSString data);
 
-		void ping(WSString data = "");
-		void pong(WSString data = "");
+		bool ping(WSString data = "");
+		bool pong(WSString data = "");
 
 		void close();
 

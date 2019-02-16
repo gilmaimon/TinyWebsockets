@@ -95,7 +95,7 @@ namespace websockets { namespace internals {
         return frame;
     }
 
-    void WebsocketsEndpoint::send(WSString data, uint8_t opcode, bool mask, uint8_t maskingKey[4]) {
+    bool WebsocketsEndpoint::send(WSString data, uint8_t opcode, bool mask, uint8_t maskingKey[4]) {        
         Header header;
         header.fin = 1;
         header.flags = 0b000;
@@ -103,7 +103,6 @@ namespace websockets { namespace internals {
         header.mask = mask? 1: 0;
         header.payload = data.size() < 126? data.size(): data.size() > 1<<16? 127: 126;
 
-        //header.log();
         // send initial header
         this->_socket.send(reinterpret_cast<uint8_t*>(&header), 2);
 
@@ -124,19 +123,32 @@ namespace websockets { namespace internals {
         }
 
         this->_socket.send(data);
+        return true; // TODO dont assume success
     }
 
-    void WebsocketsEndpoint::close(bool sendCloseFrame) {
-        if(sendCloseFrame) send("", MessageType::Close);
+    void WebsocketsEndpoint::close() {
+        send("", MessageType::Close);
         this->_socket.close();
     }
 
-    void WebsocketsEndpoint::pong(WSString msg) {
-        send(msg, MessageType::Pong);
+    bool WebsocketsEndpoint::pong(WSString msg) {
+        // Pong data must be shorter than 125 bytes
+        if(msg.size() > 125)  {
+            return false;
+        }
+        else {
+            return send(msg, MessageType::Pong);
+        }
     }
 
-    void WebsocketsEndpoint::ping(WSString msg) {
-        send(msg, MessageType::Ping);
+    bool WebsocketsEndpoint::ping(WSString msg) {
+        // Ping data must be shorter than 125 bytes
+        if(msg.size() > 125) {
+            return false;
+        }
+        else {
+            return send(msg, MessageType::Ping);
+        }
     }
 
     WebsocketsEndpoint::~WebsocketsEndpoint() {}
