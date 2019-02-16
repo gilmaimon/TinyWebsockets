@@ -45,9 +45,9 @@ namespace websockets {
 
 	private:
 		network::TcpClient* _client;
+		bool _connectionOpen;
 		MessageCallback _messagesCallback;
 		EventCallback _eventsCallback;
-		bool _connectionOpen;
 
 		void _handlePing(WebsocketsMessage);
 		void _handlePong(WebsocketsMessage);
