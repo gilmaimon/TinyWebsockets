@@ -182,8 +182,8 @@ namespace websockets {
     }
 
     void WebsocketsClient::_handlePing(WebsocketsMessage message) {
-        this->_eventsCallback(WebsocketsEvent::GotPing, message.data());
         WebsocketsEndpoint::pong(message.data());
+        this->_eventsCallback(WebsocketsEvent::GotPing, message.data());
     }
 
     void WebsocketsClient::_handlePong(WebsocketsMessage message) {
