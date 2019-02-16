@@ -10,7 +10,7 @@ namespace websockets { namespace internals {
     public:
         WebsocketsEndpoint(network::TcpSocket& socket);
         bool poll();
-        WebsocketsFrame recv();
+        WebsocketsMessage recv();
         bool send(WSString data, uint8_t opcode, bool mask = false, uint8_t maskingKey[4] = nullptr);    
         
         bool ping(WSString msg = "");
@@ -19,5 +19,6 @@ namespace websockets { namespace internals {
         virtual ~WebsocketsEndpoint();
     private:
         network::TcpSocket& _socket;
+        WebsocketsFrame _recv();
     };
 }} // websockets::internals

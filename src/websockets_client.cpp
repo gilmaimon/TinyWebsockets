@@ -124,12 +124,11 @@ namespace websockets {
     }
 
     bool WebsocketsClient::poll() {
-        bool framesReceived = false;
+        bool messageReceived = false;
         while(available() && WebsocketsEndpoint::poll()) {
-            auto frame = WebsocketsEndpoint::recv();
-            framesReceived = true;
+            auto msg = WebsocketsEndpoint::recv();
+            messageReceived = true;
             
-            auto msg = WebsocketsMessage::CreateFromFrame(frame);
             if(msg.isBinary() || msg.isText()) {
                 this->_messagesCallback(std::move(msg));
             } else if(msg.type() == MessageType::Ping) {
@@ -141,7 +140,7 @@ namespace websockets {
             }
         }
 
-        return framesReceived;
+        return messageReceived;
     }
 
     bool WebsocketsClient::send(WSString data) {
@@ -177,12 +176,10 @@ namespace websockets {
     void WebsocketsClient::close() {
         if(available()) {
             this->_connectionOpen = false;
-            WebsocketsEndpoint::close();
         }
     }
 
     void WebsocketsClient::_handlePing(WebsocketsMessage message) {
-        WebsocketsEndpoint::pong(message.data());
         this->_eventsCallback(WebsocketsEvent::GotPing, message.data());
     }
 
@@ -193,7 +190,6 @@ namespace websockets {
     void WebsocketsClient::_handleClose(WebsocketsMessage message) {
         if(available()) {
             this->_connectionOpen = false;
-            WebsocketsEndpoint::close();
         }
         this->_eventsCallback(WebsocketsEvent::ConnectionClosed, message.data());
     }

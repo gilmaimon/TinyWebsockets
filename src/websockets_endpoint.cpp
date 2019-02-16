@@ -61,7 +61,7 @@ namespace websockets { namespace internals {
         }
     }
 
-    WebsocketsFrame WebsocketsEndpoint::recv() {
+    WebsocketsFrame WebsocketsEndpoint::_recv() {
         auto header = readHeaderFromSocket(this->_socket);
         uint64_t payloadLength = readExtendedPayloadLength(this->_socket, header);
         
@@ -93,6 +93,31 @@ namespace websockets { namespace internals {
         frame.payload_length = payloadLength;
         frame.payload = data;
         return frame;
+    }
+
+    WebsocketsMessage WebsocketsEndpoint::recv() {
+        auto frame = _recv();
+        auto msg = WebsocketsMessage::CreateFromFrame(std::move(frame));
+        switch(msg.type()) {
+            case MessageType::Binary:
+                break; // Intentionally Empty
+            
+            case MessageType::Text: 
+                break; // Intentionally Empty
+            
+            case MessageType::Ping:
+                pong(msg.data());
+                break;
+
+            case MessageType::Pong:
+                break; // Intentionally Empty
+
+            case MessageType::Close:
+                close();
+                break;
+        }
+
+        return std::move(msg);
     }
 
     bool WebsocketsEndpoint::send(WSString data, uint8_t opcode, bool mask, uint8_t maskingKey[4]) {        
@@ -127,8 +152,10 @@ namespace websockets { namespace internals {
     }
 
     void WebsocketsEndpoint::close() {
-        send("", MessageType::Close);
-        this->_socket.close();
+        if(this->_socket.available()) {
+            send("", MessageType::Close);
+            this->_socket.close();
+        }
     }
 
     bool WebsocketsEndpoint::pong(WSString msg) {
