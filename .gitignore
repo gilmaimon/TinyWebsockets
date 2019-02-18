@@ -1,3 +1,6 @@
+#node junk from test helpers
+node_modules/
+
 #vscode
 .vscode/
 
