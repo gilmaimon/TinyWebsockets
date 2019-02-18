@@ -1,8 +1,10 @@
 #vscode
 .vscode/
 
-#cmake
+#cmake and build files
 build/
+lib/
+bin/
 
 # Prerequisites
 *.d

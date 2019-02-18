@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(tiny_websockets_demo C CXX)
-
-add_subdirectory(tiny_websockets_lib)
+project(tiny_websockets_lib C CXX)
 
 if(MSVC)
   # Force to always compile with W4
@@ -16,8 +14,17 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra -pedantic -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wundef -Wno-unused -Wno-variadic-macros -Wno-parentheses -fdiagnostics-show-option")
 endif()
 
-add_executable(demo main.cpp)
-target_include_directories(demo PUBLIC tiny_websockets_lib/include)
-target_link_libraries(demo tiny_websockets_lib wsock32 ws2_32)
+file(GLOB_RECURSE tinyws_SOURCES
+    "src/*.cpp"
+)
 
-install(TARGETS demo DESTINATION bin)
+file(GLOB_RECURSE tinyws_HEADERS 
+    "include/*.h"
+    "include/*.hpp"
+)
+
+include_directories(include)
+add_library(tiny_websockets_lib STATIC ${tinyws_HEADERS} ${tinyws_SOURCES})
+set_target_properties(tiny_websockets_lib PROPERTIES LINKER_LANGUAGE CXX)
+
+install(TARGETS tiny_websockets_lib DESTINATION lib)
