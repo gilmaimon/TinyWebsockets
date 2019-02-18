@@ -19,16 +19,17 @@ add_library(Catch INTERFACE)
 target_include_directories(Catch INTERFACE catch2/)
 
 
-file(GLOB TEST_SOURCES
-    "src/*.cpp"
-)
+file(GLOB TEST_SOURCES "src/*.cpp")
+foreach(file ${TEST_SOURCES})
+  get_filename_component(_F_NAME ${file} NAME_WE)
+  add_executable(${_F_NAME} ${file})
+  target_link_libraries(${_F_NAME} Catch)
+  target_include_directories(${_F_NAME} PUBLIC ${tiny_websockets_demo_SOURCE_DIR}/tiny_websockets_lib/include)
+  target_link_libraries(${_F_NAME} tiny_websockets_lib wsock32 ws2_32)
+  add_test(NAME ${_F_NAME} COMMAND ${_F_NAME})
+endforeach()
 
-add_executable(tests ${TEST_SOURCES})
-target_link_libraries(tests Catch)
-target_include_directories(tests PUBLIC ${tiny_websockets_demo_SOURCE_DIR}/tiny_websockets_lib/include)
-target_link_libraries(tests tiny_websockets_lib wsock32 ws2_32)
-
-add_test(NAME CryptoTest COMMAND tests)
+#add_test(NAME CryptoTest COMMAND tests)
 
 #include_directories(include)
 #add_library(tiny_websockets_lib STATIC ${tinyws_HEADERS} ${tinyws_SOURCES})

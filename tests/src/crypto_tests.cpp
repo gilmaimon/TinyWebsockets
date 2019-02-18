@@ -1,5 +1,6 @@
+#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include "wscrypto/crypto.h"
+#include <wscrypto/crypto.h>
 
 TEST_CASE( "Testing Base64 Encode" ) {
     REQUIRE (websockets::crypto::base64Encode("0123456789ABCDEF") == "MDEyMzQ1Njc4OUFCQ0RFRg==");
