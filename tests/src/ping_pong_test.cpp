@@ -11,7 +11,7 @@ using namespace network;
 
 #define PING_DATA "Hi, This is data sent over a PING"
 
-TEST_CASE( "Testing Existing Server Connection" ) {
+TEST_CASE( "Testing Existing Server Connection - Ping pong test" ) {
 	auto client = WebsocketsClient::Create<WinTcpClient>();
     REQUIRE( client.connect("localhost", 8080, "/") == true );
     volatile bool done = false;

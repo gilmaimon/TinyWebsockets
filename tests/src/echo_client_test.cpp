@@ -9,7 +9,7 @@
 using namespace websockets;
 using namespace network;
 
-TEST_CASE( "Testing Existing Server Connection" ) {
+TEST_CASE( "Testing Existing Server Connection - Send and recv" ) {
 	auto client = WebsocketsClient::Create<WinTcpClient>();
     REQUIRE( client.connect("localhost", 8080, "/") == true );
     volatile bool done = false;
