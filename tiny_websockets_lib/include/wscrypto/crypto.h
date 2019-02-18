@@ -43,7 +43,10 @@ namespace websockets { namespace crypto {
   }
 #else
   WSString randomBytes(size_t len) {
-    srand(time(NULL));
+    static int onlyOnce = [](){
+      srand(time(NULL));
+      return 0;
+    }();
 
     WSString result;
     result.reserve(len);
