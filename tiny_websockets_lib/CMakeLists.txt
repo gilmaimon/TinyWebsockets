@@ -22,7 +22,7 @@ file(GLOB_RECURSE tinyws_HEADERS
     "include/*.hpp"
 )
 
-include_directories(include)
+include_directories(include/tiny_websockets)
 add_library(tiny_websockets_lib STATIC ${tinyws_HEADERS} ${tinyws_SOURCES})
 set_target_properties(tiny_websockets_lib PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(tiny_websockets_lib PUBLIC include)

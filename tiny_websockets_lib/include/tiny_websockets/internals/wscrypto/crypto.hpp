@@ -1,8 +1,8 @@
 #pragma once
 
-#include <ws_common.hpp>
-#include <wscrypto/base64.hpp>
-#include <wscrypto/sha1.hpp>
+#include <tiny_websockets/internals/ws_common.hpp>
+#include <tiny_websockets/internals/wscrypto/base64.hpp>
+#include <tiny_websockets/internals/wscrypto/sha1.hpp>
 
 #ifndef _WS_CONFIG_NO_TRUE_RANDOMNESS
 #include <time.h>

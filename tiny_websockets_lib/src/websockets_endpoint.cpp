@@ -1,4 +1,4 @@
-#include <websockets/websockets_endpoint.hpp>
+#include <tiny_websockets/internals/websockets_endpoint.hpp>
 
 namespace websockets { namespace internals {
     WebsocketsEndpoint::WebsocketsEndpoint(network::TcpSocket& socket) : _socket(socket) {

@@ -2,8 +2,8 @@
 
 #ifdef _WIN32 
 
-#include <ws_common.hpp>
-#include <network/tcp_client.hpp>
+#include <tiny_websockets/internals/ws_common.hpp>
+#include <tiny_websockets/network/tcp_client.hpp>
 
 #include <windows.h>
 

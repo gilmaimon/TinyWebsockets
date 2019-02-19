@@ -1,5 +1,5 @@
-#include <websockets/websockets_client.hpp>
-#include <network/windows/win_tcp_client.hpp>
+#include <tiny_websockets/client.hpp>
+#include <tiny_websockets/network/windows/win_tcp_client.hpp>
 #include <iostream>
 
 using namespace websockets;

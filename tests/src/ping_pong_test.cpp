@@ -1,10 +1,11 @@
 #define CATCH_CONFIG_MAIN
+#include <catch.hpp>
 
 #define SOCKET int
 
-#include <catch.hpp>
-#include <websockets/websockets_client.hpp>
-#include <network/windows/win_tcp_client.hpp>
+#include <tiny_websockets/client.hpp>
+#include <tiny_websockets/network/windows/win_tcp_client.hpp>
+
 
 using namespace websockets;
 using namespace network;

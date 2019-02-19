@@ -1,9 +1,9 @@
-#include <ws_common.hpp>
-#include <network/tcp_client.hpp>
-#include <websockets/data_frame.hpp>
-#include <websockets/message.hpp>
-#include <websockets/websockets_client.hpp>
-#include <wscrypto/crypto.hpp>
+#include <tiny_websockets/internals/ws_common.hpp>
+#include <tiny_websockets/network/tcp_client.hpp>
+#include <tiny_websockets/internals/data_frame.hpp> // TODO needed???
+#include <tiny_websockets/message.hpp>
+#include <tiny_websockets/client.hpp>
+#include <tiny_websockets/internals/wscrypto/crypto.hpp>
 
 namespace websockets {
     WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
