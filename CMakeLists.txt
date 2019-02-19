@@ -20,10 +20,9 @@ endif()
 add_executable(demo main.cpp)
 target_include_directories(demo PUBLIC tiny_websockets_lib/include)
 
+target_link_libraries(demo tiny_websockets_lib)
 if(WIN32)
   target_link_libraries(demo wsock32 ws2_32)
 endif()
-
-target_link_libraries(demo tiny_websockets_lib)
 
 install(TARGETS demo DESTINATION bin)
