@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ws_common.h"
-#include "websockets/data_frame.h"
+#include "ws_common.hpp"
+#include "websockets/data_frame.hpp"
 
 namespace websockets {
     enum MessageType {

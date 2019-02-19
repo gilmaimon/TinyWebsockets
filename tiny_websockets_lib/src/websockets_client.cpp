@@ -1,9 +1,9 @@
-#include "ws_common.h"
-#include "network/tcp_client.h"
-#include "websockets/data_frame.h"
-#include "websockets/message.h"
-#include "websockets/websockets_client.h"
-#include "wscrypto/crypto.h"
+#include "ws_common.hpp"
+#include "network/tcp_client.hpp"
+#include "websockets/data_frame.hpp"
+#include "websockets/message.hpp"
+#include "websockets/websockets_client.hpp"
+#include "wscrypto/crypto.hpp"
 
 namespace websockets {
     WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 

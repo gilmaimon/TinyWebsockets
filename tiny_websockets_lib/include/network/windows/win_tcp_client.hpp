@@ -2,9 +2,9 @@
 
 #ifdef _WIN32 
 
-#include "ws_common.h"
-#include "network/tcp_client.h"
-#include "network/windows/win_tcp_socket.h"
+#include "ws_common.hpp"
+#include "network/tcp_client.hpp"
+#include "network/windows/win_tcp_socket.hpp"
 
 namespace websockets { namespace network {
 	class WinTcpClient : public TcpClient {

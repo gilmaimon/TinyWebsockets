@@ -3,8 +3,8 @@
 #define SOCKET int
 
 #include "catch.hpp"
-#include <websockets/websockets_client.h>
-#include <network/windows/win_tcp_client.h>
+#include <websockets/websockets_client.hpp>
+#include <network/windows/win_tcp_client.hpp>
 
 using namespace websockets;
 using namespace network;

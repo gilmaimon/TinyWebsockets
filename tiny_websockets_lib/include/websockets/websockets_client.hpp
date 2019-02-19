@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ws_common.h"
-#include "network/tcp_client.h"
-#include "websockets/data_frame.h"
-#include "websockets/websockets_endpoint.h"
-#include "websockets/message.h"
+#include "ws_common.hpp"
+#include "network/tcp_client.hpp"
+#include "websockets/data_frame.hpp"
+#include "websockets/websockets_endpoint.hpp"
+#include "websockets/message.hpp"
 #include <functional>
 
 namespace websockets {

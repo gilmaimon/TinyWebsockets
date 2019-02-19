@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ws_common.h"
-#include "wscrypto/base64.h"
-#include "wscrypto/sha1.h"
+#include "ws_common.hpp"
+#include "wscrypto/base64.hpp"
+#include "wscrypto/sha1.hpp"
 
 #ifndef _WS_CONFIG_NO_TRUE_RANDOMNESS
 #include <time.h>
