@@ -1,12 +1,10 @@
 #include <tiny_websockets/client.hpp>
-#include <tiny_websockets/network/windows/win_tcp_client.hpp>
 #include <iostream>
 
 using namespace websockets;
-using network::WinTcpClient;
 
 int main() {
-	auto client = WebsocketsClient::Create<WinTcpClient>();
+	WebsocketsClient client;
 
 	client.onMessage([&](WebsocketsMessage message){
 		std::cout << "Got Data: " << message.data() << std::endl;

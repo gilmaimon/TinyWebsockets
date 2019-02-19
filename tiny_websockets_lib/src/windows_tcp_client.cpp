@@ -2,17 +2,6 @@
 
 #ifdef _WIN32
 
-#define WIN32_LEAN_AND_MEAN
-
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x501
-
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 namespace websockets { namespace network {
 	/*
 		Note: Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
