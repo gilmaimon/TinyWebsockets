@@ -7,11 +7,15 @@ Client usage for Windows:
 ```c++
 using namespace websockets;
 
-WebsocketsClient client(new network::WinTcpClient);
+WebsocketsClient client;
 client.connect("localhost", "/", 8080);
 
 client.onMessage([](WebsocketsMessage message) {
     std::cout << "Got: " << message.data() << std::endl;
+});
+
+client.onEvent([](WebsocketsEvent event, std::string data) {
+    // Handle "Pings", "Pongs" and other events 
 });
 
 client.send("Hi Server!");
