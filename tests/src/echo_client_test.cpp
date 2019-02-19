@@ -2,7 +2,7 @@
 
 #define SOCKET int
 
-#include "catch.hpp"
+#include <catch.hpp>
 #include <websockets/websockets_client.hpp>
 #include <network/windows/win_tcp_client.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ws_common.hpp"
+#include <ws_common.hpp>
 
 namespace websockets { namespace crypto { namespace internals {
 /* 

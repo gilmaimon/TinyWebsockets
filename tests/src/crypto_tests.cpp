@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include <catch.hpp>
 #include <wscrypto/crypto.hpp>
 
 TEST_CASE( "Testing Base64 Encode" ) {
