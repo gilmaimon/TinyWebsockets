@@ -33,7 +33,7 @@ int main() {
 		std::cout << ", With Data: " << data << std::endl; 
 	});
 
-	client.connect("localhost", 8080, "/");
+	client.connect("http://localhost:8080/");
 	client.ping("Ping Message");
 
 	WSString data;
