@@ -92,10 +92,7 @@ namespace websockets {
         this->_connectionOpen = this->_client->connect(host, port);
         if (!this->_connectionOpen) return false;
 
-        WSString _host = host + ":";
-        _host += std::to_string(port);
-
-        auto handshake = generateHandshake(_host, path);
+        auto handshake = generateHandshake(host, path);
         this->_client->send(handshake.requestStr);
 
         auto head = this->_client->readLine();
