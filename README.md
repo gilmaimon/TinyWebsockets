@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/gilmaimon/TinyWebsockets.svg?branch=master)](https://travis-ci.org/gilmaimon/TinyWebsockets)
+
 # Tiny Websockets
 
 A minimal websockets implementation in C++. Aimed to provide a simple and slim interface for basic Websockets work.
