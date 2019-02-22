@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
+set (CMAKE_CXX_STANDARD 14)
+
 project(tiny_websockets_demo C CXX)
 
 add_subdirectory(tiny_websockets_lib)
