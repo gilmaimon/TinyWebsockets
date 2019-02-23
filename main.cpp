@@ -10,7 +10,7 @@ int main() {
 		std::cout << "Got Data: " << message.data() << std::endl;
 	});
 
-	client.onEvent([&](WebsocketsEvent event, WSString data){
+	client.onEvent([&](WebsocketsEvent event, auto data){
 		switch(event) {
 			case WebsocketsEvent::ConnectionOpened: {
 				std::cout << "Connection Opened!";

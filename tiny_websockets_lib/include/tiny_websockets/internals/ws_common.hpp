@@ -5,6 +5,14 @@
 
 namespace websockets {
     typedef std::string WSString;
+    typedef std::string WSInterfaceString;
+
+    namespace internals {
+        WSString fromInterfaceString(WSInterfaceString& str);
+        WSString fromInterfaceString(WSInterfaceString&& str);
+        WSInterfaceString fromInternalString(WSString& str);
+        WSInterfaceString fromInternalString(WSString&& str);
+    }
 }
 
 #ifdef _WIN32

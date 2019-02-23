@@ -9,7 +9,7 @@ namespace websockets {
         WebsocketsEndpoint(_client), 
         _connectionOpen(false),
         _messagesCallback([](WebsocketsMessage){}),
-        _eventsCallback([](WebsocketsEvent, WSString){}) {
+        _eventsCallback([](WebsocketsEvent, WSInterfaceString){}) {
         // Empty
     }
 
@@ -157,7 +157,7 @@ namespace websockets {
             return false;
         }
 
-        this->_eventsCallback(WebsocketsEvent::ConnectionOpened, "");
+        this->_eventsCallback(WebsocketsEvent::ConnectionOpened, {});
         return true;
     }
 

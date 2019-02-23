@@ -106,7 +106,7 @@ namespace websockets { namespace internals {
                 break; // Intentionally Empty
             
             case MessageType::Ping:
-                pong(msg.data());
+                pong(internals::fromInterfaceString(msg.data()));
                 break;
 
             case MessageType::Pong:
