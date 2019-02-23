@@ -18,12 +18,7 @@ namespace websockets {
 
 	class WebsocketsClient : private internals::WebsocketsEndpoint {
 	public:
-		WebsocketsClient(network::TcpClient* client = new DEFAULT_CLIENT);
-		
-		template <class TcpClientTy = DEFAULT_CLIENT>
-		static WebsocketsClient Create(TcpClientTy* clientPtr = new TcpClientTy) {
-			return WebsocketsClient(clientPtr);
-		}
+		WebsocketsClient();
 
 		bool connect(WSString url);
 		bool connect(WSString host, int port, WSString path);
@@ -46,10 +41,8 @@ namespace websockets {
 
 		void close();
 
-		~WebsocketsClient();
-
 	private:
-		network::TcpClient* _client;
+		WSDefaultTcpClient _client;
 		bool _connectionOpen;
 		MessageCallback _messagesCallback;
 		EventCallback _eventsCallback;
