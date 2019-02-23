@@ -201,9 +201,23 @@ namespace websockets {
         return false;
     }
 
+    bool WebsocketsClient::send(char* data, size_t len) {
+        if(available()) {
+            return WebsocketsEndpoint::send(data, len, MessageType::Text);
+        }
+        return false;
+    }
+
     bool WebsocketsClient::sendBinary(WSString data) {
         if(available()) {
             return WebsocketsEndpoint::send(data, MessageType::Binary);
+        }
+        return false;
+    }
+
+    bool WebsocketsClient::sendBinary(uint8_t* data, size_t len) {
+        if(available()) {
+            return WebsocketsEndpoint::send(data, len, MessageType::Binary);
         }
         return false;
     }

@@ -35,7 +35,9 @@ namespace websockets {
 		bool available(bool activeTest = false);
 
 		bool send(WSString data);
+		bool send(char* data, size_t len);
 		bool sendBinary(WSString data);
+		bool sendBinary(uint8_t* data, size_t len);
 		
 		WebsocketsMessage readBlocking();
 
