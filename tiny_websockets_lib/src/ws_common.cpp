@@ -2,16 +2,16 @@
 
 namespace websockets { namespace internals {
     WSString fromInterfaceString(WSInterfaceString& str) {
-        return std::move(str);
+        return str;
     }
     WSString fromInterfaceString(WSInterfaceString&& str) {
-        return std::move(str);
+        return str;
     }
 
     WSInterfaceString fromInternalString(WSString& str) {
-        return std::move(str);
+        return str;
     }
     WSInterfaceString fromInternalString(WSString&& str) {
-        return std::move(str);
+        return str;
     }
 }}
