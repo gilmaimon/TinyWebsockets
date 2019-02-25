@@ -123,7 +123,11 @@ namespace websockets {
             host = onlyHost;
         }
         
-        return connect(host, port, uri);
+        return this->connect(
+            internals::fromInternalString(host), 
+            port, 
+            internals::fromInternalString(uri)
+        );
     }
 
     bool WebsocketsClient::connect(WSInterfaceString host, int port, WSInterfaceString path) {
