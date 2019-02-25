@@ -21,7 +21,7 @@ namespace websockets {
 		WebsocketsClient();
 
 		bool connect(WSInterfaceString url);
-		bool connect(WSInterfaceString host, int port, WSString path);
+		bool connect(WSInterfaceString host, int port, WSInterfaceString path);
 		
 		void onMessage(MessageCallback callback);
 		void onEvent(EventCallback callback);
