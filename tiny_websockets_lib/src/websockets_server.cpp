@@ -71,11 +71,11 @@ namespace websockets {
 
         // std::cout << "After Handshake Validation" << std::endl;
         
-        auto accept = crypto::websocketsHandshakeEncodeKey(
+        auto serverAccept = crypto::websocketsHandshakeEncodeKey(
             params.headers["Sec-WebSocket-Key"]
         );
 
-        // std::cout << "accept: " << accept << std::endl;
+        // std::cout << "accept: " << serverAccept << std::endl;
         // std::cout << "Head: " << params.head << std::endl;
         // for(auto p : params.headers) {
         //     std::cout << "<" << p.first << ">\t<" << p.second << ">" << std::endl;
@@ -85,7 +85,7 @@ namespace websockets {
         tcpClient->send("Connection: Upgrade\r\n");
         tcpClient->send("Upgrade: websocket\r\n");
         tcpClient->send("Sec-WebSocket-Version: 13\r\n");
-        tcpClient->send("Sec-WebSocket-Accept: " + accept + "\r\n");
+        tcpClient->send("Sec-WebSocket-Accept: " + serverAccept + "\r\n");
         tcpClient->send("\r\n");
         
         return WebsocketsClient(tcpClient);
