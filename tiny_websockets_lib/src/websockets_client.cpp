@@ -115,10 +115,10 @@ namespace websockets {
         WSString protocol = "";
         if(doestStartsWith(url, "http://")) {
             protocol = "http";
-            url = url.substr(strlen("http://"));
+            url = url.substr(7); //strlen("http://") == 7
         } else if(doestStartsWith(url, "ws://")) {
             protocol = "ws";
-            url = url.substr(strlen("ws://"));
+            url = url.substr(5); //strlen("ws://") == 5
         } else {
             return false;
             // Not supported
