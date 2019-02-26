@@ -17,7 +17,9 @@ namespace websockets {
 
 #ifdef _WIN32
     #include <tiny_websockets/network/windows/win_tcp_client.hpp>
+    #include <tiny_websockets/network/windows/win_tcp_server.hpp>
     #define WSDefaultTcpClient websockets::network::WinTcpClient
+    #define WSDefaultTcpServer websockets::network::WinTcpServer
 #elif defined(__linux__)
     #include <tiny_websockets/network/linux/linux_tcp_client.hpp>
     #define WSDefaultTcpClient websockets::network::LinuxTcpClient
