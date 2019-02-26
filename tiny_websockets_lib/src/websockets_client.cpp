@@ -5,8 +5,9 @@
 #include <tiny_websockets/internals/wscrypto/crypto.hpp>
 
 namespace websockets {
-    WebsocketsClient::WebsocketsClient() : 
-        WebsocketsEndpoint(_client), 
+    WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
+        WebsocketsEndpoint(*client), 
+        _client(client),
         _connectionOpen(false),
         _messagesCallback([](WebsocketsMessage){}),
         _eventsCallback([](WebsocketsEvent, WSInterfaceString){}) {
@@ -131,13 +132,13 @@ namespace websockets {
     }
 
     bool WebsocketsClient::connect(WSInterfaceString host, int port, WSInterfaceString path) {
-        this->_connectionOpen = this->_client.connect(internals::fromInterfaceString(host), port);
+        this->_connectionOpen = this->_client->connect(internals::fromInterfaceString(host), port);
         if (!this->_connectionOpen) return false;
 
         auto handshake = generateHandshake(internals::fromInterfaceString(host), internals::fromInterfaceString(path));
-        this->_client.send(handshake.requestStr);
+        this->_client->send(handshake.requestStr);
 
-        auto head = this->_client.readLine();
+        auto head = this->_client->readLine();
         if(!doestStartsWith(head, "HTTP/1.1 101")) {
             close();
             return false;
@@ -146,7 +147,7 @@ namespace websockets {
         WSString serverResponseHeaders = "";
         WSString line = "";
         while (true) {
-            line = this->_client.readLine();
+            line = this->_client->readLine();
             serverResponseHeaders += line;
             if (line == "\r\n") break;
         }
@@ -227,7 +228,7 @@ namespace websockets {
     }
 
     bool WebsocketsClient::available(bool activeTest) {
-        this->_connectionOpen &= this->_client.available();
+        this->_connectionOpen &= this->_client->available();
         if(this->_connectionOpen && activeTest)  {
             WebsocketsEndpoint::ping();
         }
@@ -261,5 +262,9 @@ namespace websockets {
             this->_connectionOpen = false;
         }
         this->_eventsCallback(WebsocketsEvent::ConnectionClosed, message.data());
+    }
+
+    WebsocketsClient::~WebsocketsClient() {
+        delete this->_client;
     }
 }
