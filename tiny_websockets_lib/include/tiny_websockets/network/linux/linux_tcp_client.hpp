@@ -11,7 +11,7 @@
 namespace websockets { namespace network {
 	class LinuxTcpClient : public TcpClient {
     public:
-        LinuxTcpClient();
+        LinuxTcpClient(int socket = INVALID_SOCKET);
         bool connect(WSString host, int port) override;
         bool poll() override;
         bool available() override;
