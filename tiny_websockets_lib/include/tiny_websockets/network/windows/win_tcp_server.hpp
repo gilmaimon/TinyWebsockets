@@ -3,7 +3,7 @@
 #ifdef _WIN32 
 
 #include <tiny_websockets/internals/ws_common.hpp>
-#include <tiny_websockets/network/tcp_client.hpp>
+#include <tiny_websockets/network/tcp_server.hpp>
 
 #define WIN32_LEAN_AND_MEAN
 
@@ -17,19 +17,13 @@
 #include <stdio.h>
 
 namespace websockets { namespace network {
-    class WinTcpClient : public TcpClient {
+    class WinTcpServer : public TcpServer {
     public:
-        WinTcpClient(SOCKET s = INVALID_SOCKET);
-        bool connect(WSString host, int port) override;
-        bool poll() override;
+        bool listen(WSString host, int port) override;
+		TcpClient* accept() override;
         bool available() override;
-        void send(WSString data) override;
-        void send(uint8_t* data, uint32_t len) override;
-        WSString readLine() override;
-        void read(uint8_t* buffer, uint32_t len) override;
         void close() override;
-        virtual ~WinTcpClient();
-
+        virtual ~WinTcpServer();
     private:
         SOCKET socket;
     };

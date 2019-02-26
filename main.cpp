@@ -1,10 +1,28 @@
 #include <tiny_websockets/client.hpp>
+#include <tiny_websockets/server.hpp>
 #include <iostream>
 
 using namespace websockets;
 
+void _do() {
+	network::WinTcpServer server;
+	server.listen("localhost", 8081);
+	if(!server.available()) {
+		return;
+	}
+
+	auto client = server.accept();
+	system("sleep 1");
+	while(client->poll()) std::cout << client->readLine();
+	delete client;
+}
 int main() {
+	_do();
+	return 1;
 	WebsocketsClient client;
+
+	//WebsocketsServer server;
+	//server.listen("localhost", 8081);
 
 	client.onMessage([&](WebsocketsMessage message){
 		std::cout << "Got Data: " << message.data() << std::endl;

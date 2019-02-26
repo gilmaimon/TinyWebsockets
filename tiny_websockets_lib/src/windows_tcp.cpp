@@ -1,7 +1,20 @@
 #include <tiny_websockets/network/windows/win_tcp_client.hpp>
+#include <tiny_websockets/network/windows/win_tcp_server.hpp>
 
 #ifdef _WIN32
 
+// Taken from: https://stackoverflow.com/questions/1869689/is-it-possible-to-tell-if-wsastartup-has-been-called-in-a-process
+bool isWinsockInitialized() {
+    SOCKET s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (s == INVALID_SOCKET && WSAGetLastError() == WSANOTINITIALISED){
+        return false;
+    }
+
+    closesocket(s);
+    return true;
+}
+
+// Client Impl
 namespace websockets { namespace network {
 	/*
 		Note: Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
@@ -17,10 +30,12 @@ namespace websockets { namespace network {
 			*ptr = NULL,
 			hints;
 
-		// Initialize Winsock
-		int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-		if (iResult != 0) {
-			return INVALID_SOCKET;
+		// Initialize Winsock if not already initialized
+		if(isWinsockInitialized() == false) {
+			int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+			if (iResult != 0) {
+				return INVALID_SOCKET;
+			}
 		}
 
 		ZeroMemory(&hints, sizeof(hints));
@@ -29,7 +44,7 @@ namespace websockets { namespace network {
 		hints.ai_protocol = IPPROTO_TCP;
 
 		// Resolve the server address and port
-		iResult = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &result);
+		int iResult = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &result);
 		if (iResult != 0) {
 			return INVALID_SOCKET;
 		}
@@ -83,6 +98,10 @@ namespace websockets { namespace network {
 		else {
 			return true;
 		}
+	}
+
+	WinTcpClient::WinTcpClient(SOCKET s) : socket(s) {
+		// Empty
 	}
 
 	bool WinTcpClient::connect(WSString host, int port) {
@@ -146,6 +165,114 @@ namespace websockets { namespace network {
 	WinTcpClient::~WinTcpClient() {
 		close();
 	}
+}} // websockets::network
+
+
+// Server Impl
+namespace websockets { namespace network {
+	/*
+		Note: Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
+		With MSVC:
+		#pragma comment (lib, "Ws2_32.lib")
+		#pragma comment (lib, "Mswsock.lib")
+		#pragma comment (lib, "AdvApi32.lib")
+	*/
+
+	SOCKET getWindowsServerSocket(WSString host, int port) {
+		WSADATA wsaData;
+		// Initialize Winsock if not already initialized
+		if(isWinsockInitialized() == false) {
+			int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+			if (iResult != 0) {
+				return INVALID_SOCKET;
+			}
+		}
+		
+		struct addrinfo hints;
+		ZeroMemory(&hints, sizeof(hints));
+		hints.ai_family = AF_INET;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_protocol = IPPROTO_TCP;
+		hints.ai_flags = AI_PASSIVE;
+
+		struct addrinfo *result = NULL;
+		// Resolve the server address and port
+		int iResult = getaddrinfo(NULL, std::to_string(port).c_str(), &hints, &result);
+		if ( iResult != 0 ) {
+			printf("getaddrinfo failed with error: %d\n", iResult);
+			//WSACleanup();
+			return INVALID_SOCKET;
+		}
+
+
+		// Create a SOCKET for connecting to server
+		auto serverSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+		if (serverSocket == INVALID_SOCKET) {
+			printf("socket failed with error: %d\n", WSAGetLastError());
+			freeaddrinfo(result);
+			//WSACleanup();
+			return INVALID_SOCKET;
+		}
+
+		// Setup the TCP listening socket
+		iResult = bind( serverSocket, result->ai_addr, static_cast<int>(result->ai_addrlen));
+		if (iResult == SOCKET_ERROR) {
+			printf("bind failed with error: %d\n", WSAGetLastError());
+			freeaddrinfo(result);
+			closesocket(serverSocket);
+			//WSACleanup();
+			return INVALID_SOCKET;
+		}
+
+		freeaddrinfo(result);
+
+		iResult = listen(serverSocket, SOMAXCONN);
+		if (iResult == SOCKET_ERROR) {
+			printf("listen failed with error: %d\n", WSAGetLastError());
+			closesocket(serverSocket);
+			//WSACleanup();
+			return INVALID_SOCKET;
+		}
+
+		return serverSocket;	
+	}
+
+	bool WinTcpServer::listen(WSString host, int port) {
+		this->socket = getWindowsServerSocket(host, port);
+		return this->available();
+	}
+
+	SOCKET windowsAccept(SOCKET serverSocket) {
+		// Accept a client socket
+		auto clientSocket = accept(serverSocket, NULL, NULL);
+		if (clientSocket == INVALID_SOCKET) {
+			printf("accept failed with error: %d\n", WSAGetLastError());
+		}
+		return clientSocket;
+	}
+
+	TcpClient* WinTcpServer::accept() {
+		return new WinTcpClient(windowsAccept(this->socket));
+	}
+	
+	
+	bool WinTcpServer::available() {
+		return this->socket != INVALID_SOCKET;
+	}
+	
+	
+	void WinTcpServer::close() {
+		closesocket(this->socket);
+		
+		// TODO: WSACleanup should only called once per application??
+		// WSACleanup();
+	}
+
+
+	WinTcpServer::~WinTcpServer() {
+		this->close();
+	}
+
 }} // websockets::network
 
 #endif // #ifdef _WIN32
