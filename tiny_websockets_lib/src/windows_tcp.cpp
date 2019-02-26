@@ -23,7 +23,7 @@ namespace websockets { namespace network {
 		#pragma comment (lib, "Mswsock.lib")
 		#pragma comment (lib, "AdvApi32.lib")
 	*/
-	SOCKET windowsTcpConnect(WSString host, int port) {
+	SOCKET windowsTcpConnect(uint16_t port) {
 		WSADATA wsaData;
 		SOCKET connectSocket = INVALID_SOCKET;
 		struct addrinfo *result = NULL,

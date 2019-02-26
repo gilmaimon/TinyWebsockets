@@ -154,7 +154,7 @@ namespace websockets { namespace network {
 		return sockfd;
 	}
 
-	bool LinuxTcpServer::listen(WSString host, int port) {
+	bool LinuxTcpServer::listen(uint16_t port) {
 		this->_socket = linuxTcpServerInit(this->_num_backlog, port);
 		return this->available();
 	}

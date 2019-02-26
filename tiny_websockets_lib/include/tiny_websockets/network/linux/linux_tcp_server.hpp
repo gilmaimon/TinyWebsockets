@@ -12,7 +12,7 @@ namespace websockets { namespace network {
 	class LinuxTcpServer : public TcpServer {
     public:
         LinuxTcpServer(size_t backlog = DEFAULT_BACKLOG_SIZE) : _num_backlog(backlog) {}
-        bool listen(WSString host, int port) override;
+        bool listen(uint16_t port) override;
 		TcpClient* accept() override;
         bool available() override;
         void close() override;

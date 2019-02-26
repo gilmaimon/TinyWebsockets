@@ -16,7 +16,7 @@ namespace websockets {
 		WebsocketsServer& operator=(const WebsocketsServer&& other) = delete;
 
 		bool available();
-        void listen(WSInterfaceString host, int port);
+        void listen(uint16_t port);
 		WebsocketsClient accept();
 
 		virtual ~WebsocketsServer();

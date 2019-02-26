@@ -9,11 +9,8 @@ namespace websockets {
         return this->_server->available();
     }
 
-    void WebsocketsServer::listen(WSInterfaceString host, int port) {
-        this->_server->listen(
-            internals::fromInterfaceString(host), 
-            port
-        );
+    void WebsocketsServer::listen(uint16_t port) {
+        this->_server->listen(port);
     }
 
     struct ParsedHandshakeParams {
