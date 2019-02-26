@@ -23,7 +23,7 @@ namespace websockets { namespace network {
 		#pragma comment (lib, "Mswsock.lib")
 		#pragma comment (lib, "AdvApi32.lib")
 	*/
-	SOCKET windowsTcpConnect(uint16_t port) {
+	SOCKET windowsTcpConnect(WSString host, int port) {
 		WSADATA wsaData;
 		SOCKET connectSocket = INVALID_SOCKET;
 		struct addrinfo *result = NULL,
@@ -178,7 +178,7 @@ namespace websockets { namespace network {
 		#pragma comment (lib, "AdvApi32.lib")
 	*/
 
-	SOCKET getWindowsServerSocket(WSString host, int port) {
+	SOCKET getWindowsServerSocket(int port) {
 		WSADATA wsaData;
 		// Initialize Winsock if not already initialized
 		if(isWinsockInitialized() == false) {
@@ -237,8 +237,8 @@ namespace websockets { namespace network {
 		return serverSocket;	
 	}
 
-	bool WinTcpServer::listen(WSString host, int port) {
-		this->socket = getWindowsServerSocket(host, port);
+	bool WinTcpServer::listen(uint16_t port) {
+		this->socket = getWindowsServerSocket(port);
 		return this->available();
 	}
 
