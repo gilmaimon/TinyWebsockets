@@ -9,8 +9,8 @@ namespace websockets {
         WebsocketsEndpoint(*client), 
         _client(client),
         _connectionOpen(client->available()),
-        _messagesCallback([](WebsocketsMessage){}),
-        _eventsCallback([](WebsocketsEvent, WSInterfaceString){}) {
+        _messagesCallback([](WebsocketsClient&, WebsocketsMessage){}),
+        _eventsCallback([](WebsocketsClient&, WebsocketsEvent, WSInterfaceString){}) {
         // Empty
     }
 
@@ -185,7 +185,7 @@ namespace websockets {
             return false;
         }
 
-        this->_eventsCallback(WebsocketsEvent::ConnectionOpened, {});
+        this->_eventsCallback(*this, WebsocketsEvent::ConnectionOpened, {});
         return true;
     }
 
@@ -204,7 +204,7 @@ namespace websockets {
             messageReceived = true;
             
             if(msg.isBinary() || msg.isText()) {
-                this->_messagesCallback(std::move(msg));
+                this->_messagesCallback(*this, std::move(msg));
             } else if(msg.type() == MessageType::Ping) {
                 _handlePing(std::move(msg));
             } else if(msg.type() == MessageType::Pong) {
@@ -272,18 +272,18 @@ namespace websockets {
     }
 
     void WebsocketsClient::_handlePing(WebsocketsMessage message) {
-        this->_eventsCallback(WebsocketsEvent::GotPing, message.data());
+        this->_eventsCallback(*this, WebsocketsEvent::GotPing, message.data());
     }
 
     void WebsocketsClient::_handlePong(WebsocketsMessage message) {
-        this->_eventsCallback(WebsocketsEvent::GotPong, message.data());
+        this->_eventsCallback(*this, WebsocketsEvent::GotPong, message.data());
     }
 
     void WebsocketsClient::_handleClose(WebsocketsMessage message) {
         if(available()) {
             this->_connectionOpen = false;
         }
-        this->_eventsCallback(WebsocketsEvent::ConnectionClosed, message.data());
+        this->_eventsCallback(*this, WebsocketsEvent::ConnectionClosed, message.data());
     }
 
     WebsocketsClient::~WebsocketsClient() {

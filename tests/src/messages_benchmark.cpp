@@ -58,7 +58,7 @@ TEST_CASE( "Benchmarking message sending to server" ) {
     REQUIRE( client.connect("localhost", 8080, "/") == true );
     volatile bool done = false;
 
-    client.onMessage([&done](auto message){
+    client.onMessage([&done](WebsocketsClient& client, auto message){
         REQUIRE( message.data() == "ECHO: Hello Server" );
         done = true;
     });

@@ -10,7 +10,7 @@ TEST_CASE( "Testing Existing Server Connection - Send and recv" ) {
     REQUIRE( client.connect("localhost", 8080, "/") == true );
     volatile bool done = false;
 
-    client.onMessage([&done](auto message){
+    client.onMessage([&done](WebsocketsClient& client, auto message){
         REQUIRE( message.data() == "ECHO: Hello Server" );
         done = true;
     });

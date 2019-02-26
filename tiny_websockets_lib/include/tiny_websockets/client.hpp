@@ -13,8 +13,10 @@ namespace websockets {
 		ConnectionClosed,
 		GotPing, GotPong
 	};
-    typedef std::function<void(WebsocketsMessage)> MessageCallback;
-    typedef std::function<void(WebsocketsEvent, WSInterfaceString data)> EventCallback;
+
+	class WebsocketsClient;
+    typedef std::function<void(WebsocketsClient&, WebsocketsMessage)> MessageCallback;
+    typedef std::function<void(WebsocketsClient&, WebsocketsEvent, WSInterfaceString data)> EventCallback;
 
 	class WebsocketsClient : private internals::WebsocketsEndpoint {
 	public:
