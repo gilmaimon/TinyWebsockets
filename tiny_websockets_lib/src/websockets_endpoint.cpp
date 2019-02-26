@@ -1,22 +1,22 @@
 #include <tiny_websockets/internals/websockets_endpoint.hpp>
 
 namespace websockets { namespace internals {
-    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpSocket& socket) : _socket(socket) {
+    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client) : _client(client) {
         // Empty
     }
 
     bool WebsocketsEndpoint::poll() {
-        return this->_socket.poll();
+        return this->_client.poll();
     }
 
-    Header readHeaderFromSocket(network::TcpSocket& socket) {
+    Header readHeaderFromSocket(network::TcpClient& socket) {
         Header header;
         header.payload = 0;
         socket.read(reinterpret_cast<uint8_t*>(&header), 2);
         return std::move(header);
     }
 
-    uint64_t readExtendedPayloadLength(network::TcpSocket& socket, const Header& header) {
+    uint64_t readExtendedPayloadLength(network::TcpClient& socket, const Header& header) {
         uint64_t extendedPayload = header.payload;
         // in case of extended payload length
         if (header.payload == 126) {
@@ -33,11 +33,11 @@ namespace websockets { namespace internals {
         return extendedPayload;
     }
 
-    void readMaskingKey(network::TcpSocket& socket, uint8_t* outputBuffer) {
+    void readMaskingKey(network::TcpClient& socket, uint8_t* outputBuffer) {
         socket.read(reinterpret_cast<uint8_t*>(outputBuffer), 4);
     }
 
-    WSString readData(network::TcpSocket& socket, uint64_t extendedPayload) {
+    WSString readData(network::TcpClient& socket, uint64_t extendedPayload) {
         const uint64_t BUFFER_SIZE = 64;
 
         WSString data = "";
@@ -62,17 +62,17 @@ namespace websockets { namespace internals {
     }
 
     WebsocketsFrame WebsocketsEndpoint::_recv() {
-        auto header = readHeaderFromSocket(this->_socket);
-        uint64_t payloadLength = readExtendedPayloadLength(this->_socket, header);
+        auto header = readHeaderFromSocket(this->_client);
+        uint64_t payloadLength = readExtendedPayloadLength(this->_client, header);
         
         uint8_t maskingKey[4];
         // if masking is set
         if (header.mask) {
-            readMaskingKey(this->_socket, maskingKey);
+            readMaskingKey(this->_client, maskingKey);
         }
 
         // read the message's payload (data) according to the read length
-        WSString data = readData(this->_socket, payloadLength);
+        WSString data = readData(this->_client, payloadLength);
 
         // if masking is set un-mask the message
         if (header.mask) {
@@ -133,7 +133,7 @@ namespace websockets { namespace internals {
         header.payload = len < 126? len: len > 1<<16? 127: 126;
 
         // send initial header
-        this->_socket.send(reinterpret_cast<uint8_t*>(&header), 2);
+        this->_client.send(reinterpret_cast<uint8_t*>(&header), 2);
 
         if(header.payload == 126) {
             // send 16 bit length
@@ -141,24 +141,24 @@ namespace websockets { namespace internals {
             // swap the bytes
             extendedLen = extendedLen << 8 | extendedLen >> 8;
 
-            this->_socket.send(reinterpret_cast<uint8_t*>(&extendedLen), 2);
+            this->_client.send(reinterpret_cast<uint8_t*>(&extendedLen), 2);
         } else if(header.payload == 127) {
             // TODO handle very long messages
         }
 
         // if masking is set, send the masking key
         if(mask) {
-            this->_socket.send(reinterpret_cast<uint8_t*>(maskingKey), 4);
+            this->_client.send(reinterpret_cast<uint8_t*>(maskingKey), 4);
         }
 
-        this->_socket.send(data, len);
+        this->_client.send(data, len);
         return true; // TODO dont assume success
     }
 
     void WebsocketsEndpoint::close() {
-        if(this->_socket.available()) {
+        if(this->_client.available()) {
             send("", MessageType::Close);
-            this->_socket.close();
+            this->_client.close();
         }
     }
 

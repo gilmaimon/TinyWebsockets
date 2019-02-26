@@ -85,12 +85,12 @@ namespace websockets { namespace network {
 		}
 	}
 
-	bool WinTcpSocket::connect(WSString host, int port) {
+	bool WinTcpClient::connect(WSString host, int port) {
 		this->socket = windowsTcpConnect(host, port);
 		return available();
 	}
 
-	bool WinTcpSocket::poll() {
+	bool WinTcpClient::poll() {
 		unsigned long bytesToRead;
 		auto errorCode = ioctlsocket(this->socket, FIONREAD, &bytesToRead);
 		if(errorCode == SOCKET_ERROR) {
@@ -102,20 +102,20 @@ namespace websockets { namespace network {
 		}
 	}
 
-	bool WinTcpSocket::available() {
+	bool WinTcpClient::available() {
 		return socket != INVALID_SOCKET;
 	}
 
-	void WinTcpSocket::send(WSString data) {
+	void WinTcpClient::send(WSString data) {
 		this->send(reinterpret_cast<uint8_t*>(const_cast<char*>(data.c_str())), data.size());
 	}
 
-	void WinTcpSocket::send(uint8_t* data, uint32_t len) {
+	void WinTcpClient::send(uint8_t* data, uint32_t len) {
 		auto error = windowsTcpSend(data, len, this->socket);
 		if(error) close();
 	}
 
-	WSString WinTcpSocket::readLine() {
+	WSString WinTcpClient::readLine() {
 		uint8_t byte = '0';
 		WSString line;
 		auto error = windowsTcpRecive(&byte, 1, this->socket);
@@ -127,12 +127,12 @@ namespace websockets { namespace network {
 		if(error) close();
 		return line;
 	}
-	void WinTcpSocket::read(uint8_t* buffer, uint32_t len) {
+	void WinTcpClient::read(uint8_t* buffer, uint32_t len) {
 		auto error = windowsTcpRecive(buffer, len, this->socket);
 		if(error) close();
 	}
 
-	void WinTcpSocket::close() {
+	void WinTcpClient::close() {
 		if(socket != INVALID_SOCKET) {
 			socket = INVALID_SOCKET;
 			// shutdown the connection since no more data will be sent/received
@@ -143,7 +143,7 @@ namespace websockets { namespace network {
 		}
 	}
 
-	WinTcpSocket::~WinTcpSocket() {
+	WinTcpClient::~WinTcpClient() {
 		close();
 	}
 }} // websockets::network
