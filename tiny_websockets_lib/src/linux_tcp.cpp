@@ -85,7 +85,7 @@ namespace websockets { namespace network {
 		return this->send(
 			reinterpret_cast<uint8_t*>(const_cast<char*>(data.c_str())),
 			data.size()
-			);
+		);
 	}
 	void LinuxTcpClient::send(uint8_t* data, uint32_t len) {
 		if(!available()) return;// false;
@@ -114,11 +114,13 @@ namespace websockets { namespace network {
 	}
 	
 	void LinuxTcpClient::read(uint8_t* buffer, uint32_t len) {
-		linuxTcpRead(this->_socket, buffer, len);
+		auto success = linuxTcpRead(this->_socket, buffer, len);
+		if(!success) close();
 	}
 
 	void LinuxTcpClient::close()  {
 		linuxTcpClose(this->_socket);
+		this->_socket = INVALID_SOCKET;
 	}
 	
 	LinuxTcpClient::~LinuxTcpClient() {
