@@ -1,8 +1,7 @@
 #pragma once
 
 #include <tiny_websockets/internals/ws_common.hpp>
-#include <tiny_websockets/network/tcp_server.hpp>
-#include <tiny_websockets/internals/data_frame.hpp>
+#include <tiny_websockets/client.hpp>
 #include <functional>
 
 namespace websockets {
@@ -16,7 +15,9 @@ namespace websockets {
 		WebsocketsServer& operator=(const WebsocketsServer& other) = delete;
 		WebsocketsServer& operator=(const WebsocketsServer&& other) = delete;
 
+		bool available();
         void listen(WSInterfaceString host, int port);
+		WebsocketsClient accept();
 
 		virtual ~WebsocketsServer();
 

@@ -158,7 +158,7 @@ namespace websockets { namespace network {
 			shutdown(socket, SD_BOTH);
 			closesocket(socket);
 			// TODO WSA cleanup shouldnt be called multiple times?
-			WSACleanup();
+			//WSACleanup();
 		}
 	}
 
@@ -252,7 +252,11 @@ namespace websockets { namespace network {
 	}
 
 	TcpClient* WinTcpServer::accept() {
-		return new WinTcpClient(windowsAccept(this->socket));
+		auto soc = windowsAccept(this->socket);
+		if(soc == INVALID_SOCKET) {
+			close();
+		}
+		return new WinTcpClient(soc);
 	}
 	
 	
@@ -263,6 +267,7 @@ namespace websockets { namespace network {
 	
 	void WinTcpServer::close() {
 		closesocket(this->socket);
+		this->socket = INVALID_SOCKET;
 		
 		// TODO: WSACleanup should only called once per application??
 		// WSACleanup();

@@ -8,7 +8,7 @@ namespace websockets {
     WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
         WebsocketsEndpoint(*client), 
         _client(client),
-        _connectionOpen(false),
+        _connectionOpen(client->available()),
         _messagesCallback([](WebsocketsMessage){}),
         _eventsCallback([](WebsocketsEvent, WSInterfaceString){}) {
         // Empty
@@ -86,6 +86,28 @@ namespace websockets {
         }
 
         return true;
+    }
+
+    WebsocketsClient::WebsocketsClient(WebsocketsClient& other) : WebsocketsClient(other._client) {
+        other._client = nullptr;
+    }
+    
+    WebsocketsClient::WebsocketsClient(WebsocketsClient&& other) : WebsocketsClient(other._client) {
+        other._client = nullptr;
+    }
+    
+    WebsocketsClient& WebsocketsClient::operator=(WebsocketsClient& other) {
+        this->_client = other._client;
+        other._client = nullptr;
+    
+        return *this;
+    }
+
+    WebsocketsClient& WebsocketsClient::operator=(WebsocketsClient&& other) {
+        this->_client = other._client;
+        other._client = nullptr;
+    
+        return *this;
     }
 
     bool WebsocketsClient::connect(WSInterfaceString _url) {
@@ -228,7 +250,7 @@ namespace websockets {
     }
 
     bool WebsocketsClient::available(bool activeTest) {
-        this->_connectionOpen &= this->_client->available();
+        this->_connectionOpen &= this->_client && this->_client->available();
         if(this->_connectionOpen && activeTest)  {
             WebsocketsEndpoint::ping();
         }

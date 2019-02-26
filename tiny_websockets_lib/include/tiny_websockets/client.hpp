@@ -20,11 +20,11 @@ namespace websockets {
 	public:
 		WebsocketsClient(network::TcpClient* client = new WSDefaultTcpClient);
 		
-		WebsocketsClient(const WebsocketsClient& other) = delete;
-		WebsocketsClient(const WebsocketsClient&& other) = delete;
+		WebsocketsClient(WebsocketsClient& other);
+		WebsocketsClient(WebsocketsClient&& other);
 		
-		WebsocketsClient& operator=(const WebsocketsClient& other) = delete;
-		WebsocketsClient& operator=(const WebsocketsClient&& other) = delete;
+		WebsocketsClient& operator=(WebsocketsClient& other);
+		WebsocketsClient& operator=(WebsocketsClient&& other);
 
 		bool connect(WSInterfaceString url);
 		bool connect(WSInterfaceString host, int port, WSInterfaceString path);
