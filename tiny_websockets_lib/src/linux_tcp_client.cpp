@@ -63,30 +63,30 @@ namespace websockets { namespace network {
 		return read(_socket, buffer, len) > 0;
 	}
 
-	LinuxTcpSocket::LinuxTcpSocket() : _socket(INVALID_SOCKET) {
+	LinuxTcpClient::LinuxTcpClient() : _socket(INVALID_SOCKET) {
 		// Empty
 	}
 
-	bool LinuxTcpSocket::connect(WSString host, int port) {
+	bool LinuxTcpClient::connect(WSString host, int port) {
 		this->_socket = linuxTcpConnect(host, port);
 		return available();
 	}
 
-	bool LinuxTcpSocket::poll() {
+	bool LinuxTcpClient::poll() {
 		int count;
 		ioctl(this->_socket, FIONREAD, &count);
 		return count > 0;
 	}
-	bool LinuxTcpSocket::available() {
+	bool LinuxTcpClient::available() {
 		return this->_socket != INVALID_SOCKET;
 	}
-	void LinuxTcpSocket::send(WSString data) {
+	void LinuxTcpClient::send(WSString data) {
 		return this->send(
 			reinterpret_cast<uint8_t*>(const_cast<char*>(data.c_str())),
 			data.size()
 			);
 	}
-	void LinuxTcpSocket::send(uint8_t* data, uint32_t len) {
+	void LinuxTcpClient::send(uint8_t* data, uint32_t len) {
 		if(!available()) return;// false;
 
 		auto success = linuxTcpSend(
@@ -99,7 +99,7 @@ namespace websockets { namespace network {
 		// return success;
 	}
 	
-	WSString LinuxTcpSocket::readLine() {
+	WSString LinuxTcpClient::readLine() {
 		uint8_t byte = '0';
 		WSString line;
 		read(&byte, 1);
@@ -112,15 +112,15 @@ namespace websockets { namespace network {
 		return line;
 	}
 	
-	void LinuxTcpSocket::read(uint8_t* buffer, uint32_t len) {
+	void LinuxTcpClient::read(uint8_t* buffer, uint32_t len) {
 		linuxTcpRead(this->_socket, buffer, len);
 	}
 
-	void LinuxTcpSocket::close()  {
+	void LinuxTcpClient::close()  {
 		linuxTcpClose(this->_socket);
 	}
 	
-	LinuxTcpSocket::~LinuxTcpSocket() {
+	LinuxTcpClient::~LinuxTcpClient() {
 		if(available()) close();
 	}
 }} // websockets::network
