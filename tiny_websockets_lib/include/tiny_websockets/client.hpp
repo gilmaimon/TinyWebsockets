@@ -22,11 +22,11 @@ namespace websockets {
 	public:
 		WebsocketsClient(network::TcpClient* client = new WSDefaultTcpClient);
 		
-		WebsocketsClient(WebsocketsClient& other);
-		WebsocketsClient(WebsocketsClient&& other);
+		WebsocketsClient(const WebsocketsClient& other);
+		WebsocketsClient(const WebsocketsClient&& other);
 		
-		WebsocketsClient& operator=(WebsocketsClient& other);
-		WebsocketsClient& operator=(WebsocketsClient&& other);
+		WebsocketsClient& operator=(const WebsocketsClient& other);
+		WebsocketsClient& operator=(const WebsocketsClient&& other);
 
 		bool connect(WSInterfaceString url);
 		bool connect(WSInterfaceString host, int port, WSInterfaceString path);
