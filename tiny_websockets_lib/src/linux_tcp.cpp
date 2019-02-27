@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <memory.h>
@@ -184,8 +185,13 @@ namespace websockets { namespace network {
 	}
 
 	bool LinuxTcpServer::poll() {
-		// TODO implement
-		return false;
+		fd_set readSet;
+		FD_ZERO(&readSet);
+		FD_SET(this->socket, &readSet);
+		timeval timeout;
+		timeout.tv_sec = 0;  // Zero timeout (poll)
+		timeout.tv_usec = 0;
+		return select(this->socket, &readSet, NULL, NULL, &timeout) == 1;
 	}
 
 	void linuxSockClose(int socket) {
