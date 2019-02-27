@@ -5,11 +5,12 @@
 #include <tiny_websockets/internals/wscrypto/crypto.hpp>
 
 namespace websockets {
-    WebsocketsClient::WebsocketsClient() : 
-        WebsocketsEndpoint(_client), 
-        _connectionOpen(false),
-        _messagesCallback([](WebsocketsMessage){}),
-        _eventsCallback([](WebsocketsEvent, WSInterfaceString){}) {
+    WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
+        WebsocketsEndpoint(*client), 
+        _client(client),
+        _connectionOpen(client->available()),
+        _messagesCallback([](WebsocketsClient&, WebsocketsMessage){}),
+        _eventsCallback([](WebsocketsClient&, WebsocketsEvent, WSInterfaceString){}) {
         // Empty
     }
 
@@ -87,15 +88,37 @@ namespace websockets {
         return true;
     }
 
+    WebsocketsClient::WebsocketsClient(WebsocketsClient& other) : WebsocketsClient(other._client) {
+        other._client = nullptr;
+    }
+    
+    WebsocketsClient::WebsocketsClient(WebsocketsClient&& other) : WebsocketsClient(other._client) {
+        other._client = nullptr;
+    }
+    
+    WebsocketsClient& WebsocketsClient::operator=(WebsocketsClient& other) {
+        this->_client = other._client;
+        other._client = nullptr;
+    
+        return *this;
+    }
+
+    WebsocketsClient& WebsocketsClient::operator=(WebsocketsClient&& other) {
+        this->_client = other._client;
+        other._client = nullptr;
+    
+        return *this;
+    }
+
     bool WebsocketsClient::connect(WSInterfaceString _url) {
         WSString url = internals::fromInterfaceString(_url);
         WSString protocol = "";
         if(doestStartsWith(url, "http://")) {
             protocol = "http";
-            url = url.substr(strlen("http://"));
+            url = url.substr(7); //strlen("http://") == 7
         } else if(doestStartsWith(url, "ws://")) {
             protocol = "ws";
-            url = url.substr(strlen("ws://"));
+            url = url.substr(5); //strlen("ws://") == 5
         } else {
             return false;
             // Not supported
@@ -131,13 +154,13 @@ namespace websockets {
     }
 
     bool WebsocketsClient::connect(WSInterfaceString host, int port, WSInterfaceString path) {
-        this->_connectionOpen = this->_client.connect(internals::fromInterfaceString(host), port);
+        this->_connectionOpen = this->_client->connect(internals::fromInterfaceString(host), port);
         if (!this->_connectionOpen) return false;
 
         auto handshake = generateHandshake(internals::fromInterfaceString(host), internals::fromInterfaceString(path));
-        this->_client.send(handshake.requestStr);
+        this->_client->send(handshake.requestStr);
 
-        auto head = this->_client.readLine();
+        auto head = this->_client->readLine();
         if(!doestStartsWith(head, "HTTP/1.1 101")) {
             close();
             return false;
@@ -146,7 +169,7 @@ namespace websockets {
         WSString serverResponseHeaders = "";
         WSString line = "";
         while (true) {
-            line = this->_client.readLine();
+            line = this->_client->readLine();
             serverResponseHeaders += line;
             if (line == "\r\n") break;
         }
@@ -162,7 +185,7 @@ namespace websockets {
             return false;
         }
 
-        this->_eventsCallback(WebsocketsEvent::ConnectionOpened, {});
+        this->_eventsCallback(*this, WebsocketsEvent::ConnectionOpened, {});
         return true;
     }
 
@@ -181,7 +204,7 @@ namespace websockets {
             messageReceived = true;
             
             if(msg.isBinary() || msg.isText()) {
-                this->_messagesCallback(std::move(msg));
+                this->_messagesCallback(*this, std::move(msg));
             } else if(msg.type() == MessageType::Ping) {
                 _handlePing(std::move(msg));
             } else if(msg.type() == MessageType::Pong) {
@@ -227,7 +250,7 @@ namespace websockets {
     }
 
     bool WebsocketsClient::available(bool activeTest) {
-        this->_connectionOpen &= this->_client.available();
+        this->_connectionOpen &= this->_client && this->_client->available();
         if(this->_connectionOpen && activeTest)  {
             WebsocketsEndpoint::ping();
         }
@@ -249,17 +272,21 @@ namespace websockets {
     }
 
     void WebsocketsClient::_handlePing(WebsocketsMessage message) {
-        this->_eventsCallback(WebsocketsEvent::GotPing, message.data());
+        this->_eventsCallback(*this, WebsocketsEvent::GotPing, message.data());
     }
 
     void WebsocketsClient::_handlePong(WebsocketsMessage message) {
-        this->_eventsCallback(WebsocketsEvent::GotPong, message.data());
+        this->_eventsCallback(*this, WebsocketsEvent::GotPong, message.data());
     }
 
     void WebsocketsClient::_handleClose(WebsocketsMessage message) {
         if(available()) {
             this->_connectionOpen = false;
         }
-        this->_eventsCallback(WebsocketsEvent::ConnectionClosed, message.data());
+        this->_eventsCallback(*this, WebsocketsEvent::ConnectionClosed, message.data());
+    }
+
+    WebsocketsClient::~WebsocketsClient() {
+        delete this->_client;
     }
 }

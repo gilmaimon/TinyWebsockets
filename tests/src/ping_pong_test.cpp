@@ -12,7 +12,7 @@ TEST_CASE( "Testing Existing Server Connection - Ping pong test" ) {
     REQUIRE( client.connect("localhost", 8080, "/") == true );
     volatile bool done = false;
 
-    client.onEvent([&done](WebsocketsEvent event, auto data) {
+    client.onEvent([&done](WebsocketsClient& client, WebsocketsEvent event, auto data) {
         if(event == WebsocketsEvent::GotPong) {
             REQUIRE( data == PING_DATA );
             done = true;

@@ -1,16 +1,17 @@
 #include <tiny_websockets/client.hpp>
+#include <tiny_websockets/server.hpp>
 #include <iostream>
 
 using namespace websockets;
 
-int main() {
-	WebsocketsClient client;
+ int main() {
+ 	WebsocketsClient client;
 
-	client.onMessage([&](WebsocketsMessage message){
+	client.onMessage([&](WebsocketsClient&, WebsocketsMessage message){
 		std::cout << "Got Data: " << message.data() << std::endl;
 	});
 
-	client.onEvent([&](WebsocketsEvent event, auto data){
+	client.onEvent([&](WebsocketsClient&, WebsocketsEvent event, auto data){
 		switch(event) {
 			case WebsocketsEvent::ConnectionOpened: {
 				std::cout << "Connection Opened!";
@@ -29,18 +30,16 @@ int main() {
 			}
 			break;
 		}
-
-		std::cout << ", With Data: " << data << std::endl; 
+		std::cout << ", With Data: " << data << std::endl;
 	});
 
-	client.connect("http://localhost:8080/");
+	client.connect("http://echo.websocket.org:80/");
 	client.ping("Ping Message");
-
 	WSString data;
 	while(client.available()) {
 		std::cout << "Enter input: ";
 		std::getline(std::cin, data);
-		
+
 		if(data.size() > 0) {
 			if(data == "exit") client.close();
 			else {
@@ -48,8 +47,6 @@ int main() {
 				client.send(data);
 			}
 		}
-
 		client.poll();
 	}
-	std::cout << "Exited Gracefully" << std::endl;	
-}
+	std::cout << "Exited Gracefully" << std::endl;}

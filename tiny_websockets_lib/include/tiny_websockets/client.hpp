@@ -13,12 +13,20 @@ namespace websockets {
 		ConnectionClosed,
 		GotPing, GotPong
 	};
-    typedef std::function<void(WebsocketsMessage)> MessageCallback;
-    typedef std::function<void(WebsocketsEvent, WSInterfaceString data)> EventCallback;
+
+	class WebsocketsClient;
+    typedef std::function<void(WebsocketsClient&, WebsocketsMessage)> MessageCallback;
+    typedef std::function<void(WebsocketsClient&, WebsocketsEvent, WSInterfaceString data)> EventCallback;
 
 	class WebsocketsClient : private internals::WebsocketsEndpoint {
 	public:
-		WebsocketsClient();
+		WebsocketsClient(network::TcpClient* client = new WSDefaultTcpClient);
+		
+		WebsocketsClient(WebsocketsClient& other);
+		WebsocketsClient(WebsocketsClient&& other);
+		
+		WebsocketsClient& operator=(WebsocketsClient& other);
+		WebsocketsClient& operator=(WebsocketsClient&& other);
 
 		bool connect(WSInterfaceString url);
 		bool connect(WSInterfaceString host, int port, WSInterfaceString path);
@@ -41,8 +49,10 @@ namespace websockets {
 
 		void close();
 
+		virtual ~WebsocketsClient();
+
 	private:
-		WSDefaultTcpClient _client;
+		network::TcpClient* _client;
 		bool _connectionOpen;
 		MessageCallback _messagesCallback;
 		EventCallback _eventsCallback;

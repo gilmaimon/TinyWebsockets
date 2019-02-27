@@ -8,7 +8,7 @@
 namespace websockets { namespace internals {
     class WebsocketsEndpoint {
     public:
-        WebsocketsEndpoint(network::TcpSocket& socket);
+        WebsocketsEndpoint(network::TcpClient& socket);
         bool poll();
         WebsocketsMessage recv();
         bool send(uint8_t* data, size_t len, uint8_t opcode, bool mask = false, uint8_t maskingKey[4] = nullptr);    
@@ -19,7 +19,7 @@ namespace websockets { namespace internals {
         void close();
         virtual ~WebsocketsEndpoint();
     private:
-        network::TcpSocket& _socket;
+        network::TcpClient& _client;
         WebsocketsFrame _recv();
     };
 }} // websockets::internals

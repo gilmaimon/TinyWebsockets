@@ -9,9 +9,10 @@
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <memory.h>
 
+// Client impl
 namespace websockets { namespace network {
-
 	int linuxTcpConnect(WSString host, int port) {
 		int _socket = socket(AF_INET , SOCK_STREAM , 0);
 		if(_socket == INVALID_SOCKET) {
@@ -63,30 +64,30 @@ namespace websockets { namespace network {
 		return read(_socket, buffer, len) > 0;
 	}
 
-	LinuxTcpSocket::LinuxTcpSocket() : _socket(INVALID_SOCKET) {
+	LinuxTcpClient::LinuxTcpClient(int socket) : _socket(socket) {
 		// Empty
 	}
 
-	bool LinuxTcpSocket::connect(WSString host, int port) {
+	bool LinuxTcpClient::connect(WSString host, int port) {
 		this->_socket = linuxTcpConnect(host, port);
 		return available();
 	}
 
-	bool LinuxTcpSocket::poll() {
+	bool LinuxTcpClient::poll() {
 		int count;
 		ioctl(this->_socket, FIONREAD, &count);
 		return count > 0;
 	}
-	bool LinuxTcpSocket::available() {
+	bool LinuxTcpClient::available() {
 		return this->_socket != INVALID_SOCKET;
 	}
-	void LinuxTcpSocket::send(WSString data) {
+	void LinuxTcpClient::send(WSString data) {
 		return this->send(
 			reinterpret_cast<uint8_t*>(const_cast<char*>(data.c_str())),
 			data.size()
-			);
+		);
 	}
-	void LinuxTcpSocket::send(uint8_t* data, uint32_t len) {
+	void LinuxTcpClient::send(uint8_t* data, uint32_t len) {
 		if(!available()) return;// false;
 
 		auto success = linuxTcpSend(
@@ -99,7 +100,7 @@ namespace websockets { namespace network {
 		// return success;
 	}
 	
-	WSString LinuxTcpSocket::readLine() {
+	WSString LinuxTcpClient::readLine() {
 		uint8_t byte = '0';
 		WSString line;
 		read(&byte, 1);
@@ -112,16 +113,87 @@ namespace websockets { namespace network {
 		return line;
 	}
 	
-	void LinuxTcpSocket::read(uint8_t* buffer, uint32_t len) {
-		linuxTcpRead(this->_socket, buffer, len);
+	void LinuxTcpClient::read(uint8_t* buffer, uint32_t len) {
+		auto success = linuxTcpRead(this->_socket, buffer, len);
+		if(!success) close();
 	}
 
-	void LinuxTcpSocket::close()  {
+	void LinuxTcpClient::close()  {
 		linuxTcpClose(this->_socket);
+		this->_socket = INVALID_SOCKET;
 	}
 	
-	LinuxTcpSocket::~LinuxTcpSocket() {
+	LinuxTcpClient::~LinuxTcpClient() {
 		if(available()) close();
+	}
+}} // websockets::network
+
+// Server Impl
+namespace websockets { namespace network {
+
+	int linuxTcpServerInit(const size_t backlog, int port) {
+		socklen_t clilen;
+		struct sockaddr_in serv_addr, cli_addr;
+		
+		// socket init
+		auto sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		if (sockfd < 0) {
+			return INVALID_SOCKET;
+		}
+		
+		memset(&serv_addr, 0, sizeof(serv_addr));
+		serv_addr.sin_family = AF_INET;
+		serv_addr.sin_addr.s_addr = INADDR_ANY;
+		serv_addr.sin_port = htons(port);
+
+		// binding
+		if (bind(sockfd, reinterpret_cast<struct sockaddr *>(&serv_addr), sizeof(serv_addr)) < 0) {
+			return INVALID_SOCKET;
+		}
+
+		// listen
+		listen(sockfd, backlog);
+		return sockfd;
+	}
+
+	bool LinuxTcpServer::listen(uint16_t port) {
+		this->_socket = linuxTcpServerInit(this->_num_backlog, port);
+		return this->available();
+	}
+
+	int linuxAccept(int serverSocket) {
+		struct sockaddr_in cli_addr;
+		socklen_t clilen = sizeof(cli_addr);
+		
+		// accept
+		auto clientSock = accept(serverSocket, reinterpret_cast<struct sockaddr *>(&cli_addr), &clilen);
+		
+		// return default in case of accept error
+		if (clientSock < 0) return INVALID_SOCKET;
+
+		return clientSock;
+	}
+
+	TcpClient* LinuxTcpServer::accept() {
+		auto clientSock = linuxAccept(this->_socket);
+		return new LinuxTcpClient(clientSock);
+	}
+
+	bool LinuxTcpServer::available() {
+		return this->_socket != INVALID_SOCKET;
+	}
+
+	void linuxSockClose(int socket) {
+		close(socket);
+	}
+
+	void LinuxTcpServer::close() {
+		linuxSockClose(this->_socket);
+		this->_socket = INVALID_SOCKET;
+	}
+
+	LinuxTcpServer::~LinuxTcpServer() {
+		close();
 	}
 }} // websockets::network
 
