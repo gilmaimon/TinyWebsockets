@@ -7,11 +7,11 @@ using namespace websockets;
  int main() {
  	WebsocketsClient client;
 
-	client.onMessage([&](WebsocketsClient& c, WebsocketsMessage message){
+	client.onMessage([&](WebsocketsClient&, WebsocketsMessage message){
 		std::cout << "Got Data: " << message.data() << std::endl;
 	});
 
-	client.onEvent([&](WebsocketsClient& c, WebsocketsEvent event, auto data){
+	client.onEvent([&](WebsocketsClient&, WebsocketsEvent event, auto data){
 		switch(event) {
 			case WebsocketsEvent::ConnectionOpened: {
 				std::cout << "Connection Opened!";
