@@ -13,6 +13,10 @@ namespace websockets {
         this->_server->listen(port);
     }
 
+    bool WebsocketsServer::poll() {
+        return this->_server->poll();
+    }
+
     struct ParsedHandshakeParams {
         WSString head;
         std::map<WSString, WSString> headers;

@@ -265,6 +265,16 @@ namespace websockets { namespace network {
 	}
 	
 	
+	bool WinTcpServer::poll() {
+		fd_set readSet;
+		FD_ZERO(&readSet);
+		FD_SET(this->socket, &readSet);
+		timeval timeout;
+		timeout.tv_sec = 0;  // Zero timeout (poll)
+		timeout.tv_usec = 0;
+		return select(this->socket, &readSet, NULL, NULL, &timeout) == 1;
+	}
+	
 	void WinTcpServer::close() {
 		closesocket(this->socket);
 		this->socket = INVALID_SOCKET;

@@ -183,6 +183,11 @@ namespace websockets { namespace network {
 		return this->_socket != INVALID_SOCKET;
 	}
 
+	bool LinuxTcpServer::poll() {
+		// TODO implement
+		return false;
+	}
+
 	void linuxSockClose(int socket) {
 		close(socket);
 	}

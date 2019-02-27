@@ -22,6 +22,7 @@ namespace websockets { namespace network {
         bool listen(uint16_t port) override;
 		TcpClient* accept() override;
         bool available() override;
+        bool poll() override;
         void close() override;
         virtual ~WinTcpServer();
     private:
