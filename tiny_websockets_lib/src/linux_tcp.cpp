@@ -187,11 +187,11 @@ namespace websockets { namespace network {
 	bool LinuxTcpServer::poll() {
 		fd_set readSet;
 		FD_ZERO(&readSet);
-		FD_SET(this->socket, &readSet);
+		FD_SET(this->_socket, &readSet);
 		timeval timeout;
 		timeout.tv_sec = 0;  // Zero timeout (poll)
 		timeout.tv_usec = 0;
-		return select(this->socket, &readSet, NULL, NULL, &timeout) == 1;
+		return select(this->_socket, &readSet, NULL, NULL, &timeout) == 1;
 	}
 
 	void linuxSockClose(int socket) {
