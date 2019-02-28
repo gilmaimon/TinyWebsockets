@@ -82,7 +82,7 @@ int main() {
 		auto message = client.readBlocking();
 		client.send("Echo: " + message.data());
 		
-		// close the connectiong
+		// close the connection
 		client.close();
 	}
 }
