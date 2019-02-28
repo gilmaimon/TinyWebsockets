@@ -154,7 +154,9 @@ namespace websockets { namespace internals {
             this->_client.send(reinterpret_cast<uint8_t*>(maskingKey), 4);
         }
 
-        this->_client.send(data, len);
+        if(len > 0) {
+            this->_client.send(data, len);
+        }
         return true; // TODO dont assume success
     }
 
@@ -162,7 +164,7 @@ namespace websockets { namespace internals {
         std::cout << " - someone called WebsocketsEndpoint::close" << std::endl;
         if(this->_client.available()) {
             std::cout << " - is available, sending close message: " << std::endl;
-            send("", MessageType::Close);
+            send(nullptr, 0, MessageType::Close);
             std::cout << " - sent, closing tcp socket. " << std::endl;
             this->_client.close();
         }
