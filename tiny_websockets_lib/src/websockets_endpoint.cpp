@@ -1,4 +1,5 @@
 #include <tiny_websockets/internals/websockets_endpoint.hpp>
+#include <iostream>
 
 namespace websockets { namespace internals {
     WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client) : _client(client) {
@@ -13,7 +14,7 @@ namespace websockets { namespace internals {
         Header header;
         header.payload = 0;
         socket.read(reinterpret_cast<uint8_t*>(&header), 2);
-        return std::move(header);
+        return header;
     }
 
     uint64_t readExtendedPayloadLength(network::TcpClient& socket, const Header& header) {
@@ -22,7 +23,7 @@ namespace websockets { namespace internals {
         if (header.payload == 126) {
             // read next 16 bits as payload length
             uint16_t tmp = 0;
-            socket.read(reinterpret_cast<uint8_t*>(tmp), 2);
+            socket.read(reinterpret_cast<uint8_t*>(&tmp), 2);
             tmp = (tmp << 8) | (tmp >> 8);
             extendedPayload = tmp;
         }
@@ -64,7 +65,7 @@ namespace websockets { namespace internals {
     WebsocketsFrame WebsocketsEndpoint::_recv() {
         auto header = readHeaderFromSocket(this->_client);
         uint64_t payloadLength = readExtendedPayloadLength(this->_client, header);
-        
+
         uint8_t maskingKey[4];
         // if masking is set
         if (header.mask) {
@@ -125,26 +126,28 @@ namespace websockets { namespace internals {
     }
 
     bool WebsocketsEndpoint::send(uint8_t* data, size_t len, uint8_t opcode, bool mask, uint8_t maskingKey[4]) {
-        Header header;
+        HeaderWithExtended header;
         header.fin = 1;
         header.flags = 0;
         header.opcode = opcode;
         header.mask = mask? 1: 0;
-        header.payload = len < 126? len: len > 1<<16? 127: 126;
 
-        // send initial header
-        this->_client.send(reinterpret_cast<uint8_t*>(&header), 2);
+        size_t headerLen = 2;
 
-        if(header.payload == 126) {
-            // send 16 bit length
-            uint16_t extendedLen = len;
-            // swap the bytes
-            extendedLen = extendedLen << 8 | extendedLen >> 8;
-
-            this->_client.send(reinterpret_cast<uint8_t*>(&extendedLen), 2);
-        } else if(header.payload == 127) {
-            // TODO handle very long messages
+        if(len < 126) {
+            header.payload = len;
+        } else if(len < 65536) {
+            header.payload = 126;
+            header.extendedPayload = (len << 8) | (len >> 8);
+            headerLen = 4; // with 2 bytes of extra length
+        } else {
+            // TODO properly handle very long message
+            // ?? header.extraExtenedePayload;
+            header.payload = 127;
         }
+        
+        // send header
+        this->_client.send(reinterpret_cast<uint8_t*>(&header), headerLen);
 
         // if masking is set, send the masking key
         if(mask) {
@@ -156,8 +159,11 @@ namespace websockets { namespace internals {
     }
 
     void WebsocketsEndpoint::close() {
+        std::cout << " - someone called WebsocketsEndpoint::close" << std::endl;
         if(this->_client.available()) {
+            std::cout << " - is available, sending close message: " << std::endl;
             send("", MessageType::Close);
+            std::cout << " - sent, closing tcp socket. " << std::endl;
             this->_client.close();
         }
     }

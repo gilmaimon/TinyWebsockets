@@ -91,7 +91,7 @@ namespace websockets { namespace network {
 	// Returns true if error occured
 	bool windowsTcpRecive(uint8_t* buffer, uint32_t len, SOCKET socket) {
 		// Receive until the peer closes the connection
-		int iResult = recv(socket, reinterpret_cast<char*>(buffer), len, 0);
+		int iResult = recv(socket, reinterpret_cast<char*>(buffer), len, MSG_WAITALL);
 		if (iResult > 0) {
 			return false;
 		}
@@ -110,15 +110,13 @@ namespace websockets { namespace network {
 	}
 
 	bool WinTcpClient::poll() {
-		unsigned long bytesToRead;
-		auto errorCode = ioctlsocket(this->socket, FIONREAD, &bytesToRead);
-		if(errorCode == SOCKET_ERROR) {
-			close();
-			return false;
-		}
-		else {
-			return bytesToRead > 0;
-		}
+		fd_set readSet;
+		FD_ZERO(&readSet);
+		FD_SET(this->socket, &readSet);
+		timeval timeout;
+		timeout.tv_sec = 0;  // Zero timeout (poll)
+		timeout.tv_usec = 0;
+		return select(this->socket, &readSet, NULL, NULL, &timeout) == 1;
 	}
 
 	bool WinTcpClient::available() {
@@ -199,7 +197,7 @@ namespace websockets { namespace network {
 		// Resolve the server address and port
 		int iResult = getaddrinfo(NULL, std::to_string(port).c_str(), &hints, &result);
 		if ( iResult != 0 ) {
-			printf("getaddrinfo failed with error: %d\n", iResult);
+			//printf("getaddrinfo failed with error: %d\n", iResult);
 			//WSACleanup();
 			return INVALID_SOCKET;
 		}
@@ -208,7 +206,7 @@ namespace websockets { namespace network {
 		// Create a SOCKET for connecting to server
 		auto serverSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 		if (serverSocket == INVALID_SOCKET) {
-			printf("socket failed with error: %d\n", WSAGetLastError());
+			//printf("socket failed with error: %d\n", WSAGetLastError());
 			freeaddrinfo(result);
 			//WSACleanup();
 			return INVALID_SOCKET;

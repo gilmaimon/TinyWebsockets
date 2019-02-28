@@ -19,4 +19,8 @@ namespace websockets { namespace internals {
 		uint8_t payload : 7;
 		uint8_t mask : 1;
 	};
+
+	struct HeaderWithExtended : Header {
+		uint16_t extendedPayload;
+	};
 }} // websockets::internals
