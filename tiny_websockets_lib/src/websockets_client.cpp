@@ -3,7 +3,6 @@
 #include <tiny_websockets/message.hpp>
 #include <tiny_websockets/client.hpp>
 #include <tiny_websockets/internals/wscrypto/crypto.hpp>
-#include <iostream>
 
 namespace websockets {
     WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
@@ -308,12 +307,9 @@ namespace websockets {
     }
 
     void WebsocketsClient::_handleClose(WebsocketsMessage message) {
-        std::cout << " + Got Close message" << std::endl;
         if(available()) {
-            std::cout << " + Calling close() because available" << std::endl;
             close();
         }
-        std::cout << " + Calling callback for close" << std::endl;
         this->_eventsCallback(*this, WebsocketsEvent::ConnectionClosed, message.data());
     }
 

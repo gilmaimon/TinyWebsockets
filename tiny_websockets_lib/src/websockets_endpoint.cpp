@@ -1,5 +1,4 @@
 #include <tiny_websockets/internals/websockets_endpoint.hpp>
-#include <iostream>
 
 namespace websockets { namespace internals {
     WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client) : _client(client) {
@@ -161,11 +160,8 @@ namespace websockets { namespace internals {
     }
 
     void WebsocketsEndpoint::close() {
-        std::cout << " - someone called WebsocketsEndpoint::close" << std::endl;
         if(this->_client.available()) {
-            std::cout << " - is available, sending close message: " << std::endl;
             send(nullptr, 0, MessageType::Close);
-            std::cout << " - sent, closing tcp socket. " << std::endl;
             this->_client.close();
         }
     }

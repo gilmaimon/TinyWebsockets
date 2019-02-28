@@ -27,9 +27,7 @@ TEST_CASE( "Testing Server creation" ) {
     std::this_thread::sleep_for (std::chrono::seconds(1));
     
     WebsocketsClient client;
-    std::cout << "Doing Connect" << std::endl;
     REQUIRE( client.connect("localhost", 8182, "/") );
-    std::cout << "After Connect" << std::endl;
 
     auto message = client.readBlocking();
 

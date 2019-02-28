@@ -11,7 +11,6 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <memory.h>
-#include <iostream>
 
 // Client impl
 namespace websockets { namespace network {

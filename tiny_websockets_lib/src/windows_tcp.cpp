@@ -215,7 +215,7 @@ namespace websockets { namespace network {
 		// Setup the TCP listening socket
 		iResult = bind( serverSocket, result->ai_addr, static_cast<int>(result->ai_addrlen));
 		if (iResult == SOCKET_ERROR) {
-			printf("bind failed with error: %d\n", WSAGetLastError());
+			//printf("bind failed with error: %d\n", WSAGetLastError());
 			freeaddrinfo(result);
 			closesocket(serverSocket);
 			//WSACleanup();
@@ -226,7 +226,7 @@ namespace websockets { namespace network {
 
 		iResult = listen(serverSocket, SOMAXCONN);
 		if (iResult == SOCKET_ERROR) {
-			printf("listen failed with error: %d\n", WSAGetLastError());
+			//printf("listen failed with error: %d\n", WSAGetLastError());
 			closesocket(serverSocket);
 			//WSACleanup();
 			return INVALID_SOCKET;
@@ -244,7 +244,7 @@ namespace websockets { namespace network {
 		// Accept a client socket
 		auto clientSocket = accept(serverSocket, NULL, NULL);
 		if (clientSocket == INVALID_SOCKET) {
-			printf("accept failed with error: %d\n", WSAGetLastError());
+			//printf("accept failed with error: %d\n", WSAGetLastError());
 		}
 		return clientSocket;
 	}

@@ -26,11 +26,9 @@ namespace websockets {
         ParsedHandshakeParams result;
 
         result.head = client.readLine();
-        // std::cout << "Head: " << result.head << std::endl;
 
         WSString line = client.readLine();
         do {
-            // std::cout << "Got Line: " << line << std::endl;
             WSString key = "", value = "";
             size_t idx = 0;
 
@@ -63,27 +61,16 @@ namespace websockets {
         auto tcpClient = _server->accept();
         if(tcpClient->available() == false) return {};
         
-        // std::cout << "Got Connection" << std::endl;
-
         auto params = recvHandshakeRequest(*tcpClient);
-        // std::cout << "Parsed Handshake" << std::endl;
         
         if(params.headers["Connection"] != "Upgrade") return {}; 
         if(params.headers["Upgrade"] != "websocket") return {}; 
         if(params.headers["Sec-WebSocket-Version"] != "13") return {}; 
         if(params.headers["Sec-WebSocket-Key"] == "") return {};
-
-        // std::cout << "After Handshake Validation" << std::endl;
         
         auto serverAccept = crypto::websocketsHandshakeEncodeKey(
             params.headers["Sec-WebSocket-Key"]
         );
-
-        // std::cout << "accept: " << serverAccept << std::endl;
-        // std::cout << "Head: " << params.head << std::endl;
-        // for(auto p : params.headers) {
-        //     std::cout << "<" << p.first << ">\t<" << p.second << ">" << std::endl;
-        // }
 
         tcpClient->send("HTTP/1.1 101 Switching Protocols\r\n");
         tcpClient->send("Connection: Upgrade\r\n");

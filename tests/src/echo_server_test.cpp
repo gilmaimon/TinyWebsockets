@@ -11,6 +11,7 @@
 using namespace websockets;
 
 volatile bool didClientCloseConnection = false;
+volatile bool didGotCloseMessage = false;
 
 void test_server() {
     WebsocketsServer server;
@@ -20,24 +21,21 @@ void test_server() {
     REQUIRE( connectedClient.available() );
 
     connectedClient.onMessage([](WebsocketsClient& client, WebsocketsMessage msg) {
-        std::cout << "Got Message `" << msg.data() << "`, sending echo" << std::endl;
         if(msg.isText()) {
             client.send("Echo: " + msg.data());
         }
     });
 
     connectedClient.onEvent([](WebsocketsClient& client, WebsocketsEvent event, std::string data) {
-        std::cout << "Event" << std::endl;
         if(event == WebsocketsEvent::ConnectionClosed) {
-            std::cout << "Conn Closed" << std::endl;
+            didGotCloseMessage = true;
         }
     });
 
     while(connectedClient.available()) {
         connectedClient.poll();
     }
-    std::cout << "After Loop" << std::endl;
-    std::cout << "Setting Flag" << std::endl;
+
     didClientCloseConnection = true;
 }
 
@@ -67,11 +65,8 @@ TEST_CASE( "Testing Server creation" ) {
         REQUIRE( message.data() == "Echo: " + longMessage );
     }
 
-    std::cout << "Calling Close" << std::endl;
     client.close();
-    std::cout << "Joining" << std::endl;
     serverThread.join();
 
-    std::cout << "Testing" << std::endl;
-    REQUIRE ( didClientCloseConnection == true );
+    REQUIRE ( (didClientCloseConnection && didGotCloseMessage) );
 }
