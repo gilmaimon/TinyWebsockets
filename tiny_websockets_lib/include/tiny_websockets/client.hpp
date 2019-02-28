@@ -8,57 +8,57 @@
 #include <functional>
 
 namespace websockets {
-	enum class WebsocketsEvent {
-		ConnectionOpened,
-		ConnectionClosed,
-		GotPing, GotPong
-	};
+  enum class WebsocketsEvent {
+    ConnectionOpened,
+    ConnectionClosed,
+    GotPing, GotPong
+  };
 
-	class WebsocketsClient;
+  class WebsocketsClient;
     typedef std::function<void(WebsocketsClient&, WebsocketsMessage)> MessageCallback;
     typedef std::function<void(WebsocketsClient&, WebsocketsEvent, WSInterfaceString data)> EventCallback;
 
-	class WebsocketsClient : private internals::WebsocketsEndpoint {
-	public:
-		WebsocketsClient(network::TcpClient* client = new WSDefaultTcpClient);
-		
-		WebsocketsClient(const WebsocketsClient& other);
-		WebsocketsClient(const WebsocketsClient&& other);
-		
-		WebsocketsClient& operator=(const WebsocketsClient& other);
-		WebsocketsClient& operator=(const WebsocketsClient&& other);
+  class WebsocketsClient : private internals::WebsocketsEndpoint {
+  public:
+    WebsocketsClient(network::TcpClient* client = new WSDefaultTcpClient);
+    
+    WebsocketsClient(const WebsocketsClient& other);
+    WebsocketsClient(const WebsocketsClient&& other);
+    
+    WebsocketsClient& operator=(const WebsocketsClient& other);
+    WebsocketsClient& operator=(const WebsocketsClient&& other);
 
-		bool connect(WSInterfaceString url);
-		bool connect(WSInterfaceString host, int port, WSInterfaceString path);
-		
-		void onMessage(MessageCallback callback);
-		void onEvent(EventCallback callback);
+    bool connect(WSInterfaceString url);
+    bool connect(WSInterfaceString host, int port, WSInterfaceString path);
+    
+    void onMessage(MessageCallback callback);
+    void onEvent(EventCallback callback);
 
-		bool poll();
-		bool available(bool activeTest = false);
+    bool poll();
+    bool available(bool activeTest = false);
 
-		bool send(WSInterfaceString data);
-		bool send(char* data, size_t len);
-		bool sendBinary(WSInterfaceString data);
-		bool sendBinary(uint8_t* data, size_t len);
-		
-		WebsocketsMessage readBlocking();
+    bool send(WSInterfaceString data);
+    bool send(char* data, size_t len);
+    bool sendBinary(WSInterfaceString data);
+    bool sendBinary(uint8_t* data, size_t len);
+    
+    WebsocketsMessage readBlocking();
 
-		bool ping(WSInterfaceString data = "");
-		bool pong(WSInterfaceString data = "");
+    bool ping(WSInterfaceString data = "");
+    bool pong(WSInterfaceString data = "");
 
-		void close();
+    void close();
 
-		virtual ~WebsocketsClient();
+    virtual ~WebsocketsClient();
 
-	private:
-		network::TcpClient* _client;
-		bool _connectionOpen;
-		MessageCallback _messagesCallback;
-		EventCallback _eventsCallback;
+  private:
+    network::TcpClient* _client;
+    bool _connectionOpen;
+    MessageCallback _messagesCallback;
+    EventCallback _eventsCallback;
 
-		void _handlePing(WebsocketsMessage);
-		void _handlePong(WebsocketsMessage);
-		void _handleClose(WebsocketsMessage);
-	};
+    void _handlePing(WebsocketsMessage);
+    void _handlePong(WebsocketsMessage);
+    void _handleClose(WebsocketsMessage);
+  };
 }

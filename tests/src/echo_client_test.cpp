@@ -6,7 +6,7 @@
 using namespace websockets;
 
 TEST_CASE( "Testing Existing Server Connection - Send and recv" ) {
-	WebsocketsClient client;
+  WebsocketsClient client;
     REQUIRE( client.connect("localhost", 8080, "/") == true );
     volatile bool done = false;
 

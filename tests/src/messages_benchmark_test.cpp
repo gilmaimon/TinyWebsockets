@@ -54,7 +54,7 @@ uint64 GetTimeMs64()
 using namespace websockets;
 
 TEST_CASE( "Benchmarking message sending to server" ) {
-	WebsocketsClient client;
+  WebsocketsClient client;
     REQUIRE( client.connect("localhost", 8080, "/") == true );
     volatile bool done = false;
 

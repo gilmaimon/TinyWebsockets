@@ -70,21 +70,21 @@ Example of basic WebsocketsServer usage:
 using namespace websockets;
 
 int main() {
-	WebsocketsServer server;
-	server.listen(8080);
-	
-	// while possible
-	while(server.available()) {
-		// accept another client
-		WebsocketsClient client = server.accept();
-		
-		// wait for a message for the client and send an echo response
-		auto message = client.readBlocking();
-		client.send("Echo: " + message.data());
-		
-		// close the connection
-		client.close();
-	}
+  WebsocketsServer server;
+  server.listen(8080);
+  
+  // while possible
+  while(server.available()) {
+    // accept another client
+    WebsocketsClient client = server.accept();
+    
+    // wait for a message for the client and send an echo response
+    auto message = client.readBlocking();
+    client.send("Echo: " + message.data());
+    
+    // close the connection
+    client.close();
+  }
 }
 
 ```

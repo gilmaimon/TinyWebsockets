@@ -8,7 +8,7 @@ using namespace websockets;
 #define PING_DATA std::string("Hi, This is data sent over a PING")
 
 TEST_CASE( "Testing Existing Server Connection - Ping pong test" ) {
-	WebsocketsClient client;
+  WebsocketsClient client;
     REQUIRE( client.connect("localhost", 8080, "/") == true );
     volatile bool done = false;
 

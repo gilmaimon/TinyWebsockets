@@ -5,24 +5,24 @@
 #include <functional>
 
 namespace websockets {
-	class WebsocketsServer {
-	public:
-		WebsocketsServer(network::TcpServer* server = new WSDefaultTcpServer);
-		
-		WebsocketsServer(const WebsocketsServer& other) = delete;
-		WebsocketsServer(const WebsocketsServer&& other) = delete;
-		
-		WebsocketsServer& operator=(const WebsocketsServer& other) = delete;
-		WebsocketsServer& operator=(const WebsocketsServer&& other) = delete;
+  class WebsocketsServer {
+  public:
+    WebsocketsServer(network::TcpServer* server = new WSDefaultTcpServer);
+    
+    WebsocketsServer(const WebsocketsServer& other) = delete;
+    WebsocketsServer(const WebsocketsServer&& other) = delete;
+    
+    WebsocketsServer& operator=(const WebsocketsServer& other) = delete;
+    WebsocketsServer& operator=(const WebsocketsServer&& other) = delete;
 
-		bool available();
+    bool available();
         void listen(uint16_t port);
-		bool poll();
-		WebsocketsClient accept();
+    bool poll();
+    WebsocketsClient accept();
 
-		virtual ~WebsocketsServer();
+    virtual ~WebsocketsServer();
 
-	private:
-		network::TcpServer* _server;
-	};
+  private:
+    network::TcpServer* _server;
+  };
 }

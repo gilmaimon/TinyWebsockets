@@ -9,7 +9,7 @@
 #define INVALID_SOCKET -1
 
 namespace websockets { namespace network {
-	class LinuxTcpClient : public TcpClient {
+  class LinuxTcpClient : public TcpClient {
     public:
         LinuxTcpClient(int socket = INVALID_SOCKET);
         bool connect(WSString host, int port) override;
