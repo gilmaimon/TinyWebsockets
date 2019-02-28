@@ -12,7 +12,7 @@ using namespace websockets;
 
 void test_server() {
     WebsocketsServer server;
-    server.listen(8181);
+    server.listen(8182);
 
     auto connectedClient = server.accept();
     REQUIRE( connectedClient.available() );
@@ -28,7 +28,7 @@ TEST_CASE( "Testing Server creation" ) {
     
     WebsocketsClient client;
     std::cout << "Doing Connect" << std::endl;
-    REQUIRE( client.connect("localhost", 8181, "/") );
+    REQUIRE( client.connect("localhost", 8182, "/") );
     std::cout << "After Connect" << std::endl;
 
     auto message = client.readBlocking();
