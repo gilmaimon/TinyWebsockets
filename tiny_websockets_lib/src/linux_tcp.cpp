@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <memory.h>
+#include <iostream>
 
 // Client impl
 namespace websockets { namespace network {
@@ -191,7 +192,7 @@ namespace websockets { namespace network {
 		timeval timeout;
 		timeout.tv_sec = 0;  // Zero timeout (poll)
 		timeout.tv_usec = 0;
-		return select(this->_socket, &readSet, NULL, NULL, &timeout) == 1;
+		return select(this->_socket + 1, &readSet, NULL, NULL, &timeout) == 1;
 	}
 
 	void linuxSockClose(int socket) {
