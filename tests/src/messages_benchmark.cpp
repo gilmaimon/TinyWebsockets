@@ -1,3 +1,8 @@
+#define CATCH_CONFIG_MAIN
+#include <catch.hpp>
+
+#include <tiny_websockets/client.hpp>
+
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -45,11 +50,6 @@ uint64 GetTimeMs64()
  return ret;
 #endif
 }
-
-#define CATCH_CONFIG_MAIN
-#include <catch.hpp>
-
-#include <tiny_websockets/client.hpp>
 
 using namespace websockets;
 
