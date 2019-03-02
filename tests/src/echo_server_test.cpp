@@ -39,7 +39,7 @@ void test_server() {
     didClientCloseConnection = true;
 }
 
-TEST_CASE( "Testing Server creation" ) {
+TEST_CASE( "Testing An Echo Server Demo with messages longer than 126 bytes" ) {
     std::thread serverThread(test_server);
 
     std::this_thread::sleep_for (std::chrono::seconds(1));

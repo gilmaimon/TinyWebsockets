@@ -33,7 +33,7 @@ void test_echo_server() {
     while(connectedClient.available()) connectedClient.poll();
 }
 
-TEST_CASE( "Testing Server creation" ) {
+TEST_CASE( "Testing Messages is different lengths" ) {
     std::thread serverThread(test_echo_server);
 
     std::this_thread::sleep_for (std::chrono::seconds(1));

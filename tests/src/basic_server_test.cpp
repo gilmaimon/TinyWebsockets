@@ -21,7 +21,7 @@ void test_server() {
     connectedClient.close();
 }
 
-TEST_CASE( "Testing Server creation" ) {
+TEST_CASE( "Testing Server Creation and basic Communication" ) {
     std::thread serverThread(test_server);
 
     std::this_thread::sleep_for (std::chrono::seconds(1));
