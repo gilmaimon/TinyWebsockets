@@ -10,7 +10,8 @@ namespace websockets {
         _client(client),
         _connectionOpen(client->available()),
         _messagesCallback([](WebsocketsClient&, WebsocketsMessage){}),
-        _eventsCallback([](WebsocketsClient&, WebsocketsEvent, WSInterfaceString){}) {
+        _eventsCallback([](WebsocketsClient&, WebsocketsEvent, WSInterfaceString){}),
+        _sendMode(SendMode_Normal) {
         // Empty
     }
 
@@ -248,15 +249,30 @@ namespace websockets {
     }
 
     bool WebsocketsClient::send(WSInterfaceString data) {
-        if(available()) {
-            return WebsocketsEndpoint::send(internals::fromInterfaceString(data), MessageType::Text);
-        }
-        return false;
+        return this->send(data.c_str(), data.size());
     }
 
-    bool WebsocketsClient::send(char* data, size_t len) {
+    bool WebsocketsClient::send(const char* data, size_t len) {
         if(available()) {
-            return WebsocketsEndpoint::send(data, len, MessageType::Text);
+            // if in normal mode
+            if(this->_sendMode == SendMode_Normal) {
+                // send a normal message
+                return WebsocketsEndpoint::send(
+                    data,
+                    len,
+                    MessageType::Text
+                );
+            }
+            // if in streaming mode
+            else if(this->_sendMode == SendMode_Streaming) {
+                // send a continue frame
+                return WebsocketsEndpoint::send(
+                    data, 
+                    len, 
+                    MessageType::Empty,
+                    false
+                );
+            }
         }
         return false;
     }
@@ -268,9 +284,33 @@ namespace websockets {
         return false;
     }
 
-    bool WebsocketsClient::sendBinary(uint8_t* data, size_t len) {
+    bool WebsocketsClient::sendBinary(const char* data, size_t len) {
         if(available()) {
             return WebsocketsEndpoint::send(data, len, MessageType::Binary);
+        }
+        return false;
+    }
+
+    bool WebsocketsClient::stream(WSInterfaceString data) {
+        if(available() && this->_sendMode == SendMode_Normal) {
+            this->_sendMode = SendMode_Streaming;
+            return WebsocketsEndpoint::send(
+                internals::fromInterfaceString(data), 
+                MessageType::Text, 
+                false
+            );
+        }
+        return false;
+    }
+
+    bool WebsocketsClient::end(WSInterfaceString data) {
+        if(available() && this->_sendMode == SendMode_Streaming) {
+            this->_sendMode = SendMode_Normal;
+            return WebsocketsEndpoint::send(
+                internals::fromInterfaceString(data), 
+                MessageType::Empty, 
+                true
+            );
         }
         return false;
     }

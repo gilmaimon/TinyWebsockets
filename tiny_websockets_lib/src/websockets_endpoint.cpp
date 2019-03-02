@@ -95,9 +95,52 @@ namespace websockets { namespace internals {
         return frame;
     }
 
-    WebsocketsMessage WebsocketsEndpoint::recv() {
-        auto frame = _recv();
-        auto msg = WebsocketsMessage::CreateFromFrame(std::move(frame));
+    WebsocketsMessage WebsocketsEndpoint::recv() {        
+        auto firstFrame = _recv();
+
+        // Normal (unfragmented) frames are handled as a complete message 
+        if(firstFrame.isNormalUnfragmentedMessage()) {
+            auto msg = WebsocketsMessage::CreateFromFrame(std::move(firstFrame));
+            this->handleMessageInternally(msg);
+            return std::move(msg);
+        }
+        
+        // Handle a stream
+        if(firstFrame.isBeginningOfFragmentsStream()) {
+            auto messageBuilder = WebsocketsMessage::StreamBuilder(std::move(firstFrame));
+            
+            // keep getting frames and append them to the complete result
+            // stop only when an ERROR occured OR when the other side sent
+            // an "end" frame.
+            do {
+                auto frame = _recv();
+                if(frame.isContinuesFragment()) {
+                    messageBuilder.append(frame);
+                } else if(frame.isEndOfFragmentsStream()) {
+                    messageBuilder.end(frame);
+                } else {
+                    messageBuilder.badFragment();
+                }
+            } while(!messageBuilder.isComplete() && !messageBuilder.isErrored());
+
+            // if the message is complete, return it
+            if(messageBuilder.isComplete()) {
+                return messageBuilder.build();
+            }
+            // if the message is errored or incomplete, return an error message and close the connection
+            else {
+                close();
+                return {};
+            }
+        } else {
+            // This is an error. a bad combination of opcodes and fin flag arrived.
+            // Close the connectiong and TODO: indicate ERROR
+            close();
+            return {};
+        }
+    }
+
+    void WebsocketsEndpoint::handleMessageInternally(WebsocketsMessage& msg) {
         switch(msg.type()) {
             case MessageType::Binary:
                 break; // Intentionally Empty
@@ -115,18 +158,20 @@ namespace websockets { namespace internals {
             case MessageType::Close:
                 close();
                 break;
+            
+            case MessageType::Empty:
+                close();
+                break;
         }
-
-        return std::move(msg);
     }
 
-    bool WebsocketsEndpoint::send(WSString data, uint8_t opcode, bool mask, uint8_t maskingKey[4]) { 
-        return send(reinterpret_cast<uint8_t*>(const_cast<char*>(data.c_str())), data.size(), opcode, mask, maskingKey);
+    bool WebsocketsEndpoint::send(WSString data, uint8_t opcode, bool fin, bool mask, uint8_t maskingKey[4]) { 
+        return send(data.c_str(), data.size(), opcode, fin, mask, maskingKey);
     }
 
-    bool WebsocketsEndpoint::send(uint8_t* data, size_t len, uint8_t opcode, bool mask, uint8_t maskingKey[4]) {
+    bool WebsocketsEndpoint::send(const char* data, size_t len, uint8_t opcode, bool fin, bool mask, uint8_t maskingKey[4]) {
         HeaderWithExtended header;
-        header.fin = 1;
+        header.fin = fin;
         header.flags = 0;
         header.opcode = opcode;
         header.mask = mask? 1: 0;
@@ -154,7 +199,7 @@ namespace websockets { namespace internals {
         }
 
         if(len > 0) {
-            this->_client.send(data, len);
+            this->_client.send(reinterpret_cast<uint8_t*>(const_cast<char*>(data)), len);
         }
         return true; // TODO dont assume success
     }

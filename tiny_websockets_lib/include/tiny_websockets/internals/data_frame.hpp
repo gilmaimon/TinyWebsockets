@@ -10,6 +10,22 @@ namespace websockets { namespace internals {
     uint8_t mask_buf[4];
     uint64_t payload_length;
     WSString payload;
+
+    bool isBeginningOfFragmentsStream() const {
+      return (fin == 0) && (opcode != 0);
+    }
+
+    bool isContinuesFragment() const {
+      return (fin == 0) && (opcode == 0);
+    }
+
+    bool isEndOfFragmentsStream() const {
+      return (fin == 1) && (opcode == 0);
+    }
+
+    bool isNormalUnfragmentedMessage() const {
+      return (fin == 1) && (opcode != 0);
+    }
   };
 
   struct Header {
