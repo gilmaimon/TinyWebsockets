@@ -94,6 +94,7 @@ namespace websockets {
         onMessage(other._messagesCallback);
         onEvent(other._eventsCallback);
         this->_connectionOpen = other._connectionOpen;
+        this->_sendMode = other._sendMode;
 
         // delete other's client
         const_cast<WebsocketsClient&>(other)._client = nullptr;
@@ -105,6 +106,7 @@ namespace websockets {
         onMessage(other._messagesCallback);
         onEvent(other._eventsCallback);
         this->_connectionOpen = other._connectionOpen;
+        this->_sendMode = other._sendMode;
 
         // delete other's client
         const_cast<WebsocketsClient&>(other)._client = nullptr;
@@ -117,6 +119,7 @@ namespace websockets {
         onMessage(other._messagesCallback);
         onEvent(other._eventsCallback);
         this->_connectionOpen = other._connectionOpen;
+        this->_sendMode = other._sendMode;
     
         // delete other's client
         const_cast<WebsocketsClient&>(other)._client = nullptr;
@@ -130,6 +133,7 @@ namespace websockets {
         onMessage(other._messagesCallback);
         onEvent(other._eventsCallback);
         this->_connectionOpen = other._connectionOpen;
+        this->_sendMode = other._sendMode;
     
         // delete other's client
         const_cast<WebsocketsClient&>(other)._client = nullptr;
@@ -232,11 +236,11 @@ namespace websockets {
             
             if(msg.isBinary() || msg.isText()) {
                 this->_messagesCallback(*this, std::move(msg));
-            } else if(msg.type() == MessageType::Ping) {
+            } else if(msg.isPing()) {
                 _handlePing(std::move(msg));
-            } else if(msg.type() == MessageType::Pong) {
+            } else if(msg.isPong()) {
                 _handlePong(std::move(msg));
-            } else if(msg.type() == MessageType::Close) {
+            } else if(msg.isClose()) {
                 _handleClose(std::move(msg));
             }
         }
@@ -260,7 +264,7 @@ namespace websockets {
                 return WebsocketsEndpoint::send(
                     data,
                     len,
-                    MessageType::Text
+                    internals::ContentType::Text
                 );
             }
             // if in streaming mode
@@ -269,7 +273,7 @@ namespace websockets {
                 return WebsocketsEndpoint::send(
                     data, 
                     len, 
-                    MessageType::Empty,
+                    internals::ContentType::Continuation,
                     false
                 );
             }
@@ -279,14 +283,14 @@ namespace websockets {
 
     bool WebsocketsClient::sendBinary(WSInterfaceString data) {
         if(available()) {
-            return WebsocketsEndpoint::send(internals::fromInterfaceString(data), MessageType::Binary);
+            return WebsocketsEndpoint::send(internals::fromInterfaceString(data), internals::ContentType::Binary);
         }
         return false;
     }
 
     bool WebsocketsClient::sendBinary(const char* data, size_t len) {
         if(available()) {
-            return WebsocketsEndpoint::send(data, len, MessageType::Binary);
+            return WebsocketsEndpoint::send(data, len, internals::ContentType::Binary);
         }
         return false;
     }
@@ -296,7 +300,7 @@ namespace websockets {
             this->_sendMode = SendMode_Streaming;
             return WebsocketsEndpoint::send(
                 internals::fromInterfaceString(data), 
-                MessageType::Text, 
+                internals::ContentType::Text, 
                 false
             );
         }
@@ -308,7 +312,7 @@ namespace websockets {
             this->_sendMode = SendMode_Normal;
             return WebsocketsEndpoint::send(
                 internals::fromInterfaceString(data), 
-                MessageType::Empty, 
+                internals::ContentType::Continuation, 
                 true
             );
         }

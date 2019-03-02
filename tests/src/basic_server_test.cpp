@@ -31,7 +31,7 @@ TEST_CASE( "Testing Server Creation and basic Communication" ) {
 
     auto message = client.readBlocking();
 
-    REQUIRE( message.type() == MessageType::Text );
+    REQUIRE( message.isText() );
     REQUIRE( message.data() == "Hello Client" );
     
     client.close();

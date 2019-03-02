@@ -1,7 +1,7 @@
 #include <tiny_websockets/internals/websockets_endpoint.hpp>
 
 namespace websockets { namespace internals {
-    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client) : _client(client) {
+    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client) : _client(client), _recvMode(RecvMode_Normal) {
         // Empty
     }
 
@@ -95,73 +95,77 @@ namespace websockets { namespace internals {
         return frame;
     }
 
-    WebsocketsMessage WebsocketsEndpoint::recv() {        
-        auto firstFrame = _recv();
-
-        // Normal (unfragmented) frames are handled as a complete message 
-        if(firstFrame.isNormalUnfragmentedMessage()) {
-            auto msg = WebsocketsMessage::CreateFromFrame(std::move(firstFrame));
+    WebsocketsMessage WebsocketsEndpoint::handleFrameInStreamingMode(WebsocketsFrame& frame) {
+        if(frame.isControlFrame()) {
+            auto msg = WebsocketsMessage::CreateFromFrame(std::move(frame));
             this->handleMessageInternally(msg);
             return std::move(msg);
         }
-        
-        // Handle a stream
-        if(firstFrame.isBeginningOfFragmentsStream()) {
-            auto messageBuilder = WebsocketsMessage::StreamBuilder(std::move(firstFrame));
-            
-            // keep getting frames and append them to the complete result
-            // stop only when an ERROR occured OR when the other side sent
-            // an "end" frame.
-            do {
-                auto frame = _recv();
-                if(frame.isContinuesFragment()) {
-                    messageBuilder.append(frame);
-                } else if(frame.isEndOfFragmentsStream()) {
-                    messageBuilder.end(frame);
-                } else {
-                    messageBuilder.badFragment();
-                }
-            } while(!messageBuilder.isComplete() && !messageBuilder.isErrored());
+        else if(frame.isBeginningOfFragmentsStream()) {
+            this->_recvMode = RecvMode_Streaming;
 
-            // if the message is complete, return it
-            if(messageBuilder.isComplete()) {
-                return messageBuilder.build();
-            }
-            // if the message is errored or incomplete, return an error message and close the connection
-            else {
-                close();
+            if(this->_streamBuilder.isEmpty()) {
+                this->_streamBuilder.first(frame);
+                // return what?? -> partial message
                 return {};
             }
-        } else {
-            // This is an error. a bad combination of opcodes and fin flag arrived.
-            // Close the connectiong and TODO: indicate ERROR
-            close();
-            return {};
+        }
+        else if(frame.isContinuesFragment()) {
+            this->_streamBuilder.append(frame);
+            if(this->_streamBuilder.isOk()) {
+                // return what?? -> partial message
+                return {};
+            }
+        }
+        else if(frame.isEndOfFragmentsStream()) {
+            this->_recvMode = RecvMode_Normal;
+            this->_streamBuilder.end(frame);
+            if(this->_streamBuilder.isOk()) {
+                auto completeMessage = this->_streamBuilder.build();
+                this->_streamBuilder = {};
+                this->handleMessageInternally(completeMessage);
+                return completeMessage;
+            }
+        } 
+        
+        // Error
+        close();
+        return {};
+    }
+
+    WebsocketsMessage WebsocketsEndpoint::handleFrameInStandardMode(WebsocketsFrame& frame) {
+        // Normal (unfragmented) frames are handled as a complete message 
+        if(frame.isNormalUnfragmentedMessage() || frame.isControlFrame()) {
+            auto msg = WebsocketsMessage::CreateFromFrame(std::move(frame));
+            this->handleMessageInternally(msg);
+            return std::move(msg);
+        } 
+        else if(frame.isBeginningOfFragmentsStream()) {
+            return handleFrameInStreamingMode(frame);
+        }
+
+        // This is an error. a bad combination of opcodes and fin flag arrived.
+        // Close the connectiong and TODO: indicate ERROR
+        close();
+        return {};
+    }
+
+    WebsocketsMessage WebsocketsEndpoint::recv() {        
+        auto frame = _recv();
+
+        if(this->_recvMode == RecvMode_Normal) {
+            return handleFrameInStandardMode(frame);
+        } 
+        else /* this->_recvMode == RecvMode_Streaming */ {
+            return handleFrameInStreamingMode(frame);
         }
     }
 
     void WebsocketsEndpoint::handleMessageInternally(WebsocketsMessage& msg) {
-        switch(msg.type()) {
-            case MessageType::Binary:
-                break; // Intentionally Empty
-            
-            case MessageType::Text: 
-                break; // Intentionally Empty
-            
-            case MessageType::Ping:
-                pong(internals::fromInterfaceString(msg.data()));
-                break;
-
-            case MessageType::Pong:
-                break; // Intentionally Empty
-
-            case MessageType::Close:
-                close();
-                break;
-            
-            case MessageType::Empty:
-                close();
-                break;
+        if(msg.isPing()) {
+            pong(internals::fromInterfaceString(msg.data()));
+        } else if(msg.isClose()) {
+            close();
         }
     }
 
@@ -206,7 +210,7 @@ namespace websockets { namespace internals {
 
     void WebsocketsEndpoint::close() {
         if(this->_client.available()) {
-            send(nullptr, 0, MessageType::Close);
+            send(nullptr, 0, internals::ContentType::Close);
             this->_client.close();
         }
     }
@@ -217,7 +221,7 @@ namespace websockets { namespace internals {
             return false;
         }
         else {
-            return send(msg, MessageType::Pong);
+            return send(msg, ContentType::Pong);
         }
     }
 
@@ -227,7 +231,7 @@ namespace websockets { namespace internals {
             return false;
         }
         else {
-            return send(msg, MessageType::Ping);
+            return send(msg, ContentType::Ping);
         }
     }
 

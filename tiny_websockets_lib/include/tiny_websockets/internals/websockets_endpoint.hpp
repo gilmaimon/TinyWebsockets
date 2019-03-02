@@ -22,6 +22,15 @@ namespace websockets { namespace internals {
         network::TcpClient& _client;
         WebsocketsFrame _recv();
 
+        enum RecvMode {
+            RecvMode_Normal,
+            RecvMode_Streaming
+        } _recvMode;
+        WebsocketsMessage::StreamBuilder _streamBuilder;
+
         void handleMessageInternally(WebsocketsMessage& msg);
+
+        WebsocketsMessage handleFrameInStreamingMode(WebsocketsFrame& frame);
+        WebsocketsMessage handleFrameInStandardMode(WebsocketsFrame& frame);
     };
 }} // websockets::internals

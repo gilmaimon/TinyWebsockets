@@ -3,6 +3,20 @@
 #include <tiny_websockets/internals/ws_common.hpp>
 
 namespace websockets { namespace internals {
+  enum ContentType {
+    // Default value for empty messages
+    Continuation = 0x0,
+
+    // Data opcdoes
+    Text = 0x1,
+    Binary = 0x2,
+
+    // Control opcodes
+    Close = 0x8,
+    Ping = 0x9,
+    Pong = 0xA
+  };
+
   struct WebsocketsFrame {
     uint8_t fin : 1;
     uint8_t opcode : 4;
@@ -10,6 +24,10 @@ namespace websockets { namespace internals {
     uint8_t mask_buf[4];
     uint64_t payload_length;
     WSString payload;
+
+    bool isControlFrame() {
+      return fin && (opcode == 0x8 || opcode == 0x9 || opcode == 0xA);
+    }
 
     bool isBeginningOfFragmentsStream() const {
       return (fin == 0) && (opcode != 0);

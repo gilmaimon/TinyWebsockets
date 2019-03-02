@@ -48,7 +48,7 @@ TEST_CASE( "Testing Messages is different lengths" ) {
       REQUIRE ( client.send(longMessageData) );
 
       auto message = client.readBlocking();
-      REQUIRE( message.type() == MessageType::Text );
+      REQUIRE( message.isText() );
       std::cout << " - Got in return message of len: " << message.data().size() << std::endl;
       REQUIRE( message.data() == longMessageData );
     }
