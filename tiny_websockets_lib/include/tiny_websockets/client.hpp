@@ -47,6 +47,9 @@ namespace websockets {
     bool stream(WSInterfaceString data = "");
     bool end(WSInterfaceString data = "");
     
+    void setFragmentsPolicy(FragmentsPolicy newPolicy);
+    FragmentsPolicy getFragmentsPolicy();
+    
     WebsocketsMessage readBlocking();
 
     bool ping(WSInterfaceString data = "");

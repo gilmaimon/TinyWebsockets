@@ -1,7 +1,10 @@
 #include <tiny_websockets/internals/websockets_endpoint.hpp>
 
 namespace websockets { namespace internals {
-    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client) : _client(client), _recvMode(RecvMode_Normal) {
+    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client, FragmentsPolicy fragmentsPolicy) : 
+        _client(client),
+        _fragmentsPolicy(fragmentsPolicy),
+        _recvMode(RecvMode_Normal) {
         // Empty
     }
 
@@ -106,25 +109,38 @@ namespace websockets { namespace internals {
 
             if(this->_streamBuilder.isEmpty()) {
                 this->_streamBuilder.first(frame);
-                // return what?? -> partial message
-                return {};
+                // if policy is set to notify, return the frame to the user
+                if(this->_fragmentsPolicy == FragmentsPolicy_Notify) {
+                    return WebsocketsMessage(ContentType::Continuation, frame.payload);
+                }
+                else return {};
             }
         }
         else if(frame.isContinuesFragment()) {
             this->_streamBuilder.append(frame);
             if(this->_streamBuilder.isOk()) {
-                // return what?? -> partial message
-                return {};
+                // if policy is set to notify, return the frame to the user
+                if(this->_fragmentsPolicy == FragmentsPolicy_Notify) {
+                    return WebsocketsMessage(ContentType::Continuation, frame.payload);
+                }
+                else return {};
             }
         }
         else if(frame.isEndOfFragmentsStream()) {
             this->_recvMode = RecvMode_Normal;
             this->_streamBuilder.end(frame);
             if(this->_streamBuilder.isOk()) {
-                auto completeMessage = this->_streamBuilder.build();
-                this->_streamBuilder = {};
-                this->handleMessageInternally(completeMessage);
-                return completeMessage;
+                // if policy is set to notify, return the frame to the user
+                if(this->_fragmentsPolicy == FragmentsPolicy_Aggregate) {
+                    auto completeMessage = this->_streamBuilder.build();
+                    this->_streamBuilder = {};
+                    this->handleMessageInternally(completeMessage);
+                    return completeMessage;
+                }
+                else { // in case of notify policy
+                    this->_streamBuilder = {};
+                    return WebsocketsMessage(ContentType::Continuation, frame.payload);
+                }                
             }
         } 
         
@@ -233,6 +249,14 @@ namespace websockets { namespace internals {
         else {
             return send(msg, ContentType::Ping);
         }
+    }
+
+    void WebsocketsEndpoint::setFragmentsPolicy(FragmentsPolicy newPolicy) {
+        this->_fragmentsPolicy = newPolicy;
+    }
+
+    FragmentsPolicy WebsocketsEndpoint::getFragmentsPolicy() {
+        return this->_fragmentsPolicy;
     }
 
     WebsocketsEndpoint::~WebsocketsEndpoint() {}

@@ -4,6 +4,8 @@
 
 namespace websockets { namespace internals {
   enum ContentType {
+    // None as error value
+    None = -1,
     // Default value for empty messages
     Continuation = 0x0,
 

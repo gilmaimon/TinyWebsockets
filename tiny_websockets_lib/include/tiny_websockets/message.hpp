@@ -8,7 +8,7 @@ namespace websockets {
     // This message can be partial (so practically this is a Frame and not a message)
     struct WebsocketsMessage {
         WebsocketsMessage(internals::ContentType msgType, WSInterfaceString msgData) : _type(msgType), _data(msgData) {}
-        WebsocketsMessage() : WebsocketsMessage(internals::ContentType::Continuation, "") {}
+        WebsocketsMessage() : WebsocketsMessage(internals::ContentType::None, "") {}
 
         static WebsocketsMessage CreateBinary(WSInterfaceString msgData) {
             return WebsocketsMessage(internals::ContentType::Binary, msgData);
@@ -35,6 +35,8 @@ namespace websockets {
         bool isClose() const { return this->_type == internals::ContentType::Close; }
 
         bool isContinuation() const { return this->_type == internals::ContentType::Continuation; }
+
+        bool isEmpty() const { return this->_type == internals::ContentType::None; }
 
         WSInterfaceString data() const { return this->_data; }
 

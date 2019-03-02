@@ -30,7 +30,7 @@ int main() {
   client.connect("ws://echo.websocket.org/");
 
   client.onMessage([&](WebsocketsClient&, WebsocketsMessage message){
-    std::cout << "Got Data: " << message.data() << std::endl;
+    std::cout << "Got" << (message.isContinuation()? " (continSuation)": "") << " Data: " << message.data() << std::endl;
   });
 
   WSString line;

@@ -232,9 +232,13 @@ namespace websockets {
         bool messageReceived = false;
         while(available() && WebsocketsEndpoint::poll()) {
             auto msg = WebsocketsEndpoint::recv();
+            if(msg.isEmpty()) continue;
             messageReceived = true;
             
             if(msg.isBinary() || msg.isText()) {
+                this->_messagesCallback(*this, std::move(msg));
+            } else if(msg.isContinuation()) {
+                // continuation messages will only be returned when policy is appropriate
                 this->_messagesCallback(*this, std::move(msg));
             } else if(msg.isPing()) {
                 _handlePing(std::move(msg));
@@ -317,6 +321,10 @@ namespace websockets {
             );
         }
         return false;
+    }
+
+    void WebsocketsClient::setFragmentsPolicy(FragmentsPolicy newPolicy) {
+        WebsocketsEndpoint::setFragmentsPolicy(newPolicy);
     }
 
     bool WebsocketsClient::available(bool activeTest) {
