@@ -1,22 +1,6 @@
 /*
-  Interactive Websockets Client that connect to a public echo server.
-  This Client sends the messages as streams of fragmented messages.
-  
-  After running this demo, there will be a websockets client connected
-  to `echo.websocket.org` and every message the user will enter will be 
-  sent to the server. Incoming messages will be printed once the user 
-  enters an input (or an empty line, just an Enter)
-  Enter "exit" to close the connection and end the program.
-  The messages will be appended some info and will be sent like this:
-  - "User Said: " + user_input + ". Thats it!"
-
-  The code:
-    1. Sets up a client connection
-    2. Reads an input from the user
-      2-1. If the user didnt enter an empty line, the client sends the message to 
-      the server as a stream of fragmented messages (as described earlier)
-      2-2. If the user enters "exit", the program closes the connection
-    3. Polls for incoming messages and events.
+  TODO: this demos are not actually demos but more a manual tiny_websockets
+  they should be removed from public master branch
 */
 
 #include <tiny_websockets/client.hpp>
@@ -26,37 +10,66 @@
 using namespace websockets;
 
 int main() {
-  WebsocketsClient client;
-  client.connect("ws://echo.websocket.org/");
+  WebsocketsClient clientAggregate;
+  clientAggregate.connect("ws://localhost:8086/");
 
-  client.onMessage([&](WebsocketsClient&, WebsocketsMessage message){
+  WebsocketsClient clientFragmented;
+  clientFragmented.connect("ws://localhost:8087/");
+
+  clientFragmented.onMessage([&](WebsocketsClient&, WebsocketsMessage message){
+    std::cout << "Got" << (message.isContinuation()? " (continSuation)": "") << " Data: " << message.data() << std::endl;
+  });
+  clientAggregate.onMessage([&](WebsocketsClient&, WebsocketsMessage message){
     std::cout << "Got" << (message.isContinuation()? " (continSuation)": "") << " Data: " << message.data() << std::endl;
   });
 
   WSString line;
-  while(client.available()) {
+  while(clientAggregate.available() && clientFragmented.available()) {
     std::cout << "Enter input: ";
     std::getline(std::cin, line);
 
     if(line != "") {
-      if(line == "exit") client.close();
+      if(line == "exit") {
+        clientAggregate.close();
+        clientFragmented.close();
+      }
       else {
-        client.poll();
+        clientAggregate.poll();
+        clientFragmented.poll();
         
         // Stream the string ("User Said: " + line + ". Thats it!") to the server
         // This is done in 3 seperate messages 
-        client.stream("So, "); // starts streaming
-
+        clientAggregate.stream("So, "); // starts streaming
+        system("sleep 2");
         // sends continuous (fragmented) messages
-        client.send("User Said: `");
-        client.send(line);
-        client.send("`. Thats it!");
+        clientAggregate.send("User Said: `");
+        system("sleep 2");
+        clientAggregate.send(line);
+        system("sleep 2");
+        clientAggregate.send("`. Thats it!");
+        system("sleep 2");
 
         // ends the stream
-        client.end(".");
+        clientAggregate.end(".");
+
+
+        system("sleep 2");
+        clientFragmented.stream("So, "); // starts streaming
+
+        // sends continuous (fragmented) messages
+        clientFragmented.send("User Said: `");
+        system("sleep 2");
+        clientFragmented.send(line);
+        system("sleep 2");
+        clientFragmented.send("`. Thats it!");
+        system("sleep 2");
+
+        // ends the stream
+        clientFragmented.end(".");
       }
     }
-    client.poll();
+    clientAggregate.poll();
+    clientFragmented.poll();
   }
   std::cout << "Exited Gracefully" << std::endl;
 }
