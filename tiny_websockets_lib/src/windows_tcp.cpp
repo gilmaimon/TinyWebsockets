@@ -88,6 +88,10 @@ namespace websockets { namespace network {
     return false;
   }
 
+#ifndef MSG_WAITALL
+#define MSG_WAITALL 0x8 /* do not complete until packet is completely filled */
+#endif
+
   // Returns true if error occured
   bool windowsTcpRecive(uint8_t* buffer, uint32_t len, SOCKET socket) {
     // Receive until the peer closes the connection
