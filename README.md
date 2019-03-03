@@ -5,10 +5,11 @@
 A minimal websockets implementation in C++. Aimed to provide a simple and slim interface for basic Websockets work. Currently contains a `WebsocketsClient` and a `WebsocketsServer`.
 
 Some Features:
-* Supports [RFC-6455](https://tools.ietf.org/html/rfc6455) features: Pings, Pongs, Data (binary and text) Messages and more.
-* Has both: a callback based interface and a blocking interface.
-* Cross Platform, supports: Windows, Linux, and Arduino (ESP8266 and ESP32, see [ArduinoWebsockets](https://github.com/gilmaimon/ArduinoWebsockets)) 
-* Websockets Server ***(beta)***
+* Supports [RFC-6455](https://tools.ietf.org/html/rfc6455) features: **Pings**, **Pongs**, **Data** (binary and text) Messages and more.
+* Modern interface, provides both a **Callbacks-Based interface** and a **Blocking (sync) interface**.
+* **Cross Platform**, supports: Windows, Linux, and Arduino (ESP8266 and ESP32, see [ArduinoWebsockets](https://github.com/gilmaimon/ArduinoWebsockets)) 
+* **Websockets Server** *(beta)*
+* Fully supports **fragmented messages** and streaming
 
 ## Getting Started
 In order to get started and building the first TinyWebsockets demo on your machine, you should:
