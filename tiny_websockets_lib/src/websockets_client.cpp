@@ -253,7 +253,11 @@ namespace websockets {
     }
 
     WebsocketsMessage WebsocketsClient::readBlocking() {
-        return WebsocketsEndpoint::recv();
+        while(available()) {
+            auto msg = WebsocketsEndpoint::recv();
+            if(!msg.isEmpty()) return msg;
+        }
+        return {};
     }
 
     bool WebsocketsClient::send(WSInterfaceString data) {

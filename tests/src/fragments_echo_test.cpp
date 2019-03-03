@@ -65,3 +65,22 @@ TEST_CASE( "Testing sending fragmented messages - Receiving the messages with No
   REQUIRE( client.available() == true);
   while(recvdCount < 3) client.poll();
 }
+
+TEST_CASE( "Testing sending Receiving fragmented messages with readBlocking with Aggregate Policy" ) {
+  WebsocketsClient client;
+  client.setFragmentsPolicy(FragmentsPolicy_Aggregate);
+  REQUIRE( client.connect("ws://echo.websocket.org") == true );
+
+  // Stream "Msg: Hello World."
+  client.stream("Msg: ");
+  client.send("Hello World");
+  client.end(".");
+
+  auto message = client.readBlocking();
+  
+  REQUIRE( message.isContinuation() == false );
+  REQUIRE( message.isText() == true );
+  REQUIRE( message.data() == "Msg: Hello World." );
+
+  REQUIRE( client.available() == true);
+}
