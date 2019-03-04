@@ -1,7 +1,10 @@
 #include <tiny_websockets/internals/websockets_endpoint.hpp>
 
 namespace websockets { namespace internals {
-    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client) : _client(client) {
+    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client, FragmentsPolicy fragmentsPolicy) : 
+        _client(client),
+        _fragmentsPolicy(fragmentsPolicy),
+        _recvMode(RecvMode_Normal) {
         // Empty
     }
 
@@ -95,38 +98,100 @@ namespace websockets { namespace internals {
         return frame;
     }
 
-    WebsocketsMessage WebsocketsEndpoint::recv() {
-        auto frame = _recv();
-        auto msg = WebsocketsMessage::CreateFromFrame(std::move(frame));
-        switch(msg.type()) {
-            case MessageType::Binary:
-                break; // Intentionally Empty
-            
-            case MessageType::Text: 
-                break; // Intentionally Empty
-            
-            case MessageType::Ping:
-                pong(internals::fromInterfaceString(msg.data()));
-                break;
+    WebsocketsMessage WebsocketsEndpoint::handleFrameInStreamingMode(WebsocketsFrame& frame) {
+        if(frame.isControlFrame()) {
+            auto msg = WebsocketsMessage::CreateFromFrame(std::move(frame));
+            this->handleMessageInternally(msg);
+            return std::move(msg);
+        }
+        else if(frame.isBeginningOfFragmentsStream()) {
+            this->_recvMode = RecvMode_Streaming;
 
-            case MessageType::Pong:
-                break; // Intentionally Empty
+            if(this->_streamBuilder.isEmpty()) {
+                this->_streamBuilder.first(frame);
+                // if policy is set to notify, return the frame to the user
+                if(this->_fragmentsPolicy == FragmentsPolicy_Notify) {
+                    return WebsocketsMessage(ContentType::Continuation, frame.payload);
+                }
+                else return {};
+            }
+        }
+        else if(frame.isContinuesFragment()) {
+            this->_streamBuilder.append(frame);
+            if(this->_streamBuilder.isOk()) {
+                // if policy is set to notify, return the frame to the user
+                if(this->_fragmentsPolicy == FragmentsPolicy_Notify) {
+                    return WebsocketsMessage(ContentType::Continuation, frame.payload);
+                }
+                else return {};
+            }
+        }
+        else if(frame.isEndOfFragmentsStream()) {
+            this->_recvMode = RecvMode_Normal;
+            this->_streamBuilder.end(frame);
+            if(this->_streamBuilder.isOk()) {
+                // if policy is set to notify, return the frame to the user
+                if(this->_fragmentsPolicy == FragmentsPolicy_Aggregate) {
+                    auto completeMessage = this->_streamBuilder.build();
+                    this->_streamBuilder = {};
+                    this->handleMessageInternally(completeMessage);
+                    return completeMessage;
+                }
+                else { // in case of notify policy
+                    this->_streamBuilder = {};
+                    return WebsocketsMessage(ContentType::Continuation, frame.payload);
+                }                
+            }
+        } 
+        
+        // Error
+        close();
+        return {};
+    }
 
-            case MessageType::Close:
-                close();
-                break;
+    WebsocketsMessage WebsocketsEndpoint::handleFrameInStandardMode(WebsocketsFrame& frame) {
+        // Normal (unfragmented) frames are handled as a complete message 
+        if(frame.isNormalUnfragmentedMessage() || frame.isControlFrame()) {
+            auto msg = WebsocketsMessage::CreateFromFrame(std::move(frame));
+            this->handleMessageInternally(msg);
+            return std::move(msg);
+        } 
+        else if(frame.isBeginningOfFragmentsStream()) {
+            return handleFrameInStreamingMode(frame);
         }
 
-        return std::move(msg);
+        // This is an error. a bad combination of opcodes and fin flag arrived.
+        // Close the connectiong and TODO: indicate ERROR
+        close();
+        return {};
     }
 
-    bool WebsocketsEndpoint::send(WSString data, uint8_t opcode, bool mask, uint8_t maskingKey[4]) { 
-        return send(reinterpret_cast<uint8_t*>(const_cast<char*>(data.c_str())), data.size(), opcode, mask, maskingKey);
+    WebsocketsMessage WebsocketsEndpoint::recv() {        
+        auto frame = _recv();
+
+        if(this->_recvMode == RecvMode_Normal) {
+            return handleFrameInStandardMode(frame);
+        } 
+        else /* this->_recvMode == RecvMode_Streaming */ {
+            return handleFrameInStreamingMode(frame);
+        }
     }
 
-    bool WebsocketsEndpoint::send(uint8_t* data, size_t len, uint8_t opcode, bool mask, uint8_t maskingKey[4]) {
+    void WebsocketsEndpoint::handleMessageInternally(WebsocketsMessage& msg) {
+        if(msg.isPing()) {
+            pong(internals::fromInterfaceString(msg.data()));
+        } else if(msg.isClose()) {
+            close();
+        }
+    }
+
+    bool WebsocketsEndpoint::send(WSString data, uint8_t opcode, bool fin, bool mask, uint8_t maskingKey[4]) { 
+        return send(data.c_str(), data.size(), opcode, fin, mask, maskingKey);
+    }
+
+    bool WebsocketsEndpoint::send(const char* data, size_t len, uint8_t opcode, bool fin, bool mask, uint8_t maskingKey[4]) {
         HeaderWithExtended header;
-        header.fin = 1;
+        header.fin = fin;
         header.flags = 0;
         header.opcode = opcode;
         header.mask = mask? 1: 0;
@@ -154,14 +219,14 @@ namespace websockets { namespace internals {
         }
 
         if(len > 0) {
-            this->_client.send(data, len);
+            this->_client.send(reinterpret_cast<uint8_t*>(const_cast<char*>(data)), len);
         }
         return true; // TODO dont assume success
     }
 
     void WebsocketsEndpoint::close() {
         if(this->_client.available()) {
-            send(nullptr, 0, MessageType::Close);
+            send(nullptr, 0, internals::ContentType::Close);
             this->_client.close();
         }
     }
@@ -172,7 +237,7 @@ namespace websockets { namespace internals {
             return false;
         }
         else {
-            return send(msg, MessageType::Pong);
+            return send(msg, ContentType::Pong);
         }
     }
 
@@ -182,8 +247,16 @@ namespace websockets { namespace internals {
             return false;
         }
         else {
-            return send(msg, MessageType::Ping);
+            return send(msg, ContentType::Ping);
         }
+    }
+
+    void WebsocketsEndpoint::setFragmentsPolicy(FragmentsPolicy newPolicy) {
+        this->_fragmentsPolicy = newPolicy;
+    }
+
+    FragmentsPolicy WebsocketsEndpoint::getFragmentsPolicy() {
+        return this->_fragmentsPolicy;
     }
 
     WebsocketsEndpoint::~WebsocketsEndpoint() {}

@@ -38,9 +38,17 @@ namespace websockets {
     bool available(bool activeTest = false);
 
     bool send(WSInterfaceString data);
-    bool send(char* data, size_t len);
+    bool send(const char* data, size_t len);
+
     bool sendBinary(WSInterfaceString data);
-    bool sendBinary(uint8_t* data, size_t len);
+    bool sendBinary(const char* data, size_t len);
+
+    // stream messages
+    bool stream(WSInterfaceString data = "");
+    bool end(WSInterfaceString data = "");
+    
+    void setFragmentsPolicy(FragmentsPolicy newPolicy);
+    FragmentsPolicy getFragmentsPolicy();
     
     WebsocketsMessage readBlocking();
 
@@ -56,6 +64,10 @@ namespace websockets {
     bool _connectionOpen;
     MessageCallback _messagesCallback;
     EventCallback _eventsCallback;
+    enum SendMode {
+      SendMode_Normal,
+      SendMode_Streaming
+    } _sendMode;
 
     void _handlePing(WebsocketsMessage);
     void _handlePong(WebsocketsMessage);

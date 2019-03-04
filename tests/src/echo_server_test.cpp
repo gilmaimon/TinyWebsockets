@@ -52,7 +52,7 @@ TEST_CASE( "Testing An Echo Server Demo with messages longer than 126 bytes" ) {
         std::string shortMessage = "Hello World";
         REQUIRE( client.send(shortMessage) );
         auto message = client.readBlocking();
-        REQUIRE( message.type() == MessageType::Text );
+        REQUIRE( message.isText() );
         REQUIRE( message.data() == "Echo: " + shortMessage );
     }   
     
@@ -61,7 +61,7 @@ TEST_CASE( "Testing An Echo Server Demo with messages longer than 126 bytes" ) {
         std::string longMessage = "Hello World. This is a message that is longer than 126 bytes and so it will be sent diffrently than shorter message. This message is 148 bytes long.";
         REQUIRE( client.send(longMessage) );
         auto message = client.readBlocking();
-        REQUIRE( message.type() == MessageType::Text );
+        REQUIRE( message.isText() );
         REQUIRE( message.data() == "Echo: " + longMessage );
     }
 
