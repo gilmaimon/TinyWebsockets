@@ -12,6 +12,62 @@ Key Features:
 * Websockets **Client** and **Server** APIs.
 * Fully supports **Fragmented Messages** and streaming
 
+## What are Websockets?
+
+The Websockets Protocol is a way for clients and servers to exchange `Messages` over TCP in a known, common way. It is essentially a thin standard above raw TCP communication.
+
+A typical Websockets communication consists of 2 `Endpoints`, a `Client` and a `Server`. Before Endpoints can communicate they must perform an `handshake` and negotiate over the protocol's `Version`, the usage of `Sub-Protocols` and more. The `handshake` is an important step in the communication, but will not be covered here as it is very low-level. You can read more about the proccess [here](https://tools.ietf.org/html/rfc6455#page-6).
+
+This section should help you understand the basics of `Websockets` and hopefully, help you get started with the library better.
+
+*Note: This section only refers to version 13 of the protocol as described in [RFC-6455](https://tools.ietf.org/html/rfc6455).*
+
+### Messages and Frames
+
+A Websockets `Message` is composed of `Frames` where a `Frame` is a single transaction between the 2 connected endpoints. Every `Frame` has a `Header` and a `Payload`.
+
+Every `Frame` has a type associated with it represented as a 4-bit `opcode`. A frame can be either a `Control Frame` or a part of a `Data Message` (type is deduced from the `opcode` field).
+
+A `Frame` may also have a `payload` (body). The `payload` field for a standard `Data Frame` can be up to `2^64` bytes long.
+
+### Control Frames
+
+`Control Frames` are always composed of a single `Frame` and have a type associated with them. `Control Frames` are used to communicate state about the connection, to check the other's endpoint availability or close the connection.
+
+`Control Frames` may have `payload` (body) with length of up to 125 bytes.
+
+The standard `Control Frame` types are: `Ping`, `Pong` and `Close`.
+
+#### Ping & Pong
+
+The Ping frame contains an opcode of `0x9` and may include a `payload`.
+
+Upon receipt of a `Ping` frame, a `Websockets Endpoint` must send a `Pong` frame with the same `payload` of the received `Ping` frame.
+
+The Pong frame contains an opcode of `0xA` and according to the specification, should be sent "as soon as practical".
+
+A `Ping` frame may serve either as a keepalive or as a means to verify that the remote endpoint is still responsive.
+
+### Data Frames and Messages
+
+A data frame is either of type `Text` (`opcode: 0x1`) or `Binary` (`opcode: 0x2`). The `payload` field for a standard `Data Frame` can be up to `2^64` bytes long.
+
+While `Data Frames` are what going back and forth between one `Websockets Endpoint` and another, at the application level the programmer should only really care for `Messages`.
+
+`Messages` are composed of frames. A `Message` can be contained of a single `Data Frame` (by default). A `Message` can also be *fragmented* so it will be sent as a continuous sequence of `Fragments`. `Fragments` are just `Data Frames` marked as *partial* (with `opcode: 0x0`, and some other rules).
+
+By default, the user will only handle `Messages` and should not care about `Fragments`. `Fragments` become usefull when there is a need to stream content or, send it in chuncks and interpret it as a single and complete `Message`.
+
+`Data Frames` in general have no default action associated with them (unlike `Control Frames`), and are completly at the Application's level.
+
+#### Text
+
+`Text` data-frameswill have the `opcode` field set to `0x1` and the `payload` field will contain only data encoded as UTF-8.
+
+#### Binary
+
+`Binary` data-frames will have the `opcode` field set to `0x2` and the `payload` field will contain arbitrary binary data whose interpretation is solely up to the application layer.
+
 ## Getting Started
 
 ### Installation
@@ -56,6 +112,9 @@ Then, add the library to the executable by adding:
 ```cmake
 target_link_libraries (my_executable tiny_websockets_lib)
 ```
+
+## Usage
+
 
 ## Examples
 
