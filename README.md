@@ -8,7 +8,7 @@ Key Features:
 
 * Supports [RFC-6455](https://tools.ietf.org/html/rfc6455) features: **Pings**, **Pongs**, **Data Messages** ect.
 * A Modern **Callbacks-Based interface** and a **Blocking (sync) interface**.
-* **Cross Platform**, support: **Windows**, **Linux**, and **Arduino** (ESP8266 and ESP32, see [ArduinoWebsockets](https://github.com/gilmaimon/ArduinoWebsockets)) 
+* **Cross Platform**, support: **Windows**, **Linux**, and **Arduino** (ESP8266 and ESP32, see [ArduinoWebsockets](https://github.com/gilmaimon/ArduinoWebsockets))
 * Websockets **Client** and **Server** APIs.
 * Fully supports **Fragmented Messages** and streaming
 
@@ -135,6 +135,52 @@ For major changes, please open an issue first to discuss what you would like to 
 ### How to Contribute
 
 The best and easiest way to help is to clone the library, test it for yourself and share any difficulties you have. You can share your opinion and experience on the interface, complexity or any issues and suggestions you have for the library.
+
+### Project Structure
+
+The projects file structure is as follows:
+
+```bash
+.
+├── tiny_websockets_lib/ # root library folder
+|   ├── include/tiny_websockets/
+|   |   ├── internals/ # rules and base classes
+|   |   |  ├── wscrypto/ # crypto helpers (base64, sha1)
+|   |   |  ├── websockets_endpoint.hpp # WebsocketsEndpoint
+|   |   ├── network/ # internal TCP clients
+|   |   ├── ...
+|   |   ├── message.hpp # WebsocketsMessage
+|   |   ├── client.hpp # WebsocketsClient
+|   |   └── server.hpp # WebsocketsServer
+|   ├── src/ # impl (.cpp) files
+|   └── CMakeLists.txt
+|
+├── tests
+|   ├── catch2/ # catch2 for writing tests
+|   ├── ext/ # helpers (such as a node ws server) for testing
+|   └── src/
+|       ├── some_feature_test.cpp # test file with main()
+|       ├── ... # test file with main()
+|       └── other_feature_test.cpp # test file with main()
+|
+├── CMakeLists.txt
+├── demo_echo_client.cpp # demo program
+├── ... # more demo programs
+└── ... # more demo programs
+```
+
+### Running the Tests
+After making a change you would want to make sure the tests run properly and add your own tests.
+
+In order to run the tests, execute this from the root directory:
+
+```bash
+mkdir build
+cd build
+cmake ..
+make # see if build is successfull after changes
+make test # check for CTest output after changes
+```
 
 ### Missing Features
 
