@@ -18,6 +18,13 @@ The Websockets Protocol is a way for clients and servers to exchange `Messages` 
 
 A typical Websockets communication consists of 2 `Endpoints`, a `Client` and a `Server`. Before Endpoints can communicate they must perform an `handshake` and negotiate over the protocol's `Version`, the usage of `Sub-Protocols` and more. The `handshake` is an important step in the communication, but will not be covered here as it is very low-level. You can read more about the proccess [here](https://tools.ietf.org/html/rfc6455#page-6).
 
+</br>
+<center>
+<img src="https://cdn-images-1.medium.com/max/1200/1*0w3tMXm7jr174bqOprcdOg.png" width="350px" />
+
+<sup>*Credit: taken from an [article by Thilina Ashen Gamage](https://medium.com/platform-engineer/web-api-design-35df8167460)* </sup>
+</center>
+
 This section should help you understand the basics of `Websockets` and hopefully, help you get started with the library better.
 
 *Note: This section only refers to version 13 of the protocol as described in [RFC-6455](https://tools.ietf.org/html/rfc6455).*
