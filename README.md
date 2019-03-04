@@ -140,7 +140,7 @@ The best and easiest way to help is to clone the library, test it for yourself a
 
 The projects file structure is as follows:
 
-```bash
+```python
 .
 ├── tiny_websockets_lib/ # root library folder
 |   ├── include/tiny_websockets/
