@@ -229,7 +229,8 @@ The projects file structure is as follows:
 |   ├── include/tiny_websockets/
 |   |   ├── internals/ # rules and base classes
 |   |   |  ├── wscrypto/ # crypto helpers (base64, sha1)
-|   |   |  ├── websockets_endpoint.hpp # WebsocketsEndpoint
+|   |   |  ├── ...
+|   |   |  └── websockets_endpoint.hpp # WebsocketsEndpoint
 |   |   ├── network/ # internal TCP clients
 |   |   ├── ...
 |   |   ├── message.hpp # WebsocketsMessage
