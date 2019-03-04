@@ -38,13 +38,21 @@ A `Frame` may also have a `payload` (body). The `payload` field for a standard `
 
 The standard `Control Frame` types are: `Ping`, `Pong` and `Close`.
 
+#### Close
+
+The `Close` frame contains an opcode of `0x8` and may include a `payload` that indicates the reason for closing the connection.
+
+The closing-side must not send any more messages after sending a `Close` frame. The receiving-side should send a `Close` frame and then close the connection.
+
+`Close` can be sent for several reasons: internal error, protocol error, or a user-initiated close (to name a few).
+
 #### Ping & Pong
 
-The Ping frame contains an opcode of `0x9` and may include a `payload`.
+The `Ping` frame contains an opcode of `0x9` and may include a `payload`.
 
 Upon receipt of a `Ping` frame, a `Websockets Endpoint` must send a `Pong` frame with the same `payload` of the received `Ping` frame.
 
-The Pong frame contains an opcode of `0xA` and according to the specification, should be sent "as soon as practical".
+The `Pong` frame contains an opcode of `0xA` and according to the specification, should be sent "as soon as practical".
 
 A `Ping` frame may serve either as a keepalive or as a means to verify that the remote endpoint is still responsive.
 
