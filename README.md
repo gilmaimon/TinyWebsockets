@@ -41,10 +41,20 @@ make demo_echo_client
 
 ### Linking to Your Own Project
 
-Using **cmake**, add the library to the executable by adding:
+#### CMake
+
+Using **cmake**, first you need to incldue the library folder (named `tiny_websockets_lib`) as a subdirectory in your own project's `CMakeLists.txt`.
+
+For example, if you place the directory under in `libs/tiny_websockets_lib` add to your `CMakeLists.txt`:
 
 ```cmake
-  target_link_libraries (my_executable tiny_websockets_lib)
+add_subdirectory(tiny_websockets_lib)
+```
+
+Then, add the library to the executable by adding:
+
+```cmake
+target_link_libraries (my_executable tiny_websockets_lib)
 ```
 
 ## Examples
