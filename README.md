@@ -25,7 +25,7 @@ Key Features:
 
 The Websockets Protocol is a way for clients and servers to exchange `Messages` over TCP in a known, common way. It is essentially a thin standard above raw TCP communication.
 
-A typical Websockets communication consists of 2 `Endpoints`, a `Client` and a `Server`. Before Endpoints can communicate they must perform an `handshake` and negotiate over the protocol's `Version`, the usage of `Sub-Protocols` and more. The `handshake` is an important step in the communication, but will not be covered here as it is very low-level. You can read more about the proccess [here](https://tools.ietf.org/html/rfc6455#page-6).
+A typical Websockets communication consists of 2 `Endpoints`: a `Client` and a `Server`. Before Endpoints can communicate they must perform an `handshake` and negotiate over the protocol's `Version`, the usage of `Sub-Protocols` and more. The `handshake` is an important step in the communication, but will not be covered here as it is very low-level. You can read more about the proccess [here](https://tools.ietf.org/html/rfc6455#page-6).
 
 <p align="center">
 <img src="https://cdn-images-1.medium.com/max/1200/1*0w3tMXm7jr174bqOprcdOg.png" width="450px" />
