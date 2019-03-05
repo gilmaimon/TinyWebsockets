@@ -290,15 +290,30 @@ namespace websockets {
     }
 
     bool WebsocketsClient::sendBinary(WSInterfaceString data) {
-        if(available()) {
-            return WebsocketsEndpoint::send(internals::fromInterfaceString(data), internals::ContentType::Binary);
-        }
-        return false;
+        return this->send(data.c_str(), data.size());
     }
 
     bool WebsocketsClient::sendBinary(const char* data, size_t len) {
         if(available()) {
-            return WebsocketsEndpoint::send(data, len, internals::ContentType::Binary);
+            // if in normal mode
+            if(this->_sendMode == SendMode_Normal) {
+                // send a normal message
+                return WebsocketsEndpoint::send(
+                    data,
+                    len,
+                    internals::ContentType::Binary
+                );
+            }
+            // if in streaming mode
+            else if(this->_sendMode == SendMode_Streaming) {
+                // send a continue frame
+                return WebsocketsEndpoint::send(
+                    data, 
+                    len, 
+                    internals::ContentType::Continuation,
+                    false
+                );
+            }
         }
         return false;
     }
@@ -309,6 +324,19 @@ namespace websockets {
             return WebsocketsEndpoint::send(
                 internals::fromInterfaceString(data), 
                 internals::ContentType::Text, 
+                false
+            );
+        }
+        return false;
+    }
+
+    
+    bool WebsocketsClient::streamBinary(WSInterfaceString data) {
+        if(available() && this->_sendMode == SendMode_Normal) {
+            this->_sendMode = SendMode_Streaming;
+            return WebsocketsEndpoint::send(
+                internals::fromInterfaceString(data), 
+                internals::ContentType::Binary, 
                 false
             );
         }

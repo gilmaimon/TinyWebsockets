@@ -45,6 +45,7 @@ namespace websockets {
 
     // stream messages
     bool stream(WSInterfaceString data = "");
+    bool streamBinary(WSInterfaceString data = "");
     bool end(WSInterfaceString data = "");
     
     void setFragmentsPolicy(FragmentsPolicy newPolicy);
