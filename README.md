@@ -82,7 +82,7 @@ target_link_libraries (my_executable tiny_websockets_lib)
 ```
 
 ## Usage
-
+I recommend reading the examples below to get the basic usage of the library. For further reference, try the [Wiki Docs](https://github.com/gilmaimon/TinyWebsockets/wiki).
 
 ## Examples
 
