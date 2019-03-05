@@ -72,7 +72,7 @@ Using **cmake**, first you need to incldue the library folder (named `tiny_webso
 For example, if you place the directory under in `libs/tiny_websockets_lib` add to your `CMakeLists.txt`:
 
 ```cmake
-add_subdirectory(tiny_websockets_lib)
+add_subdirectory(libs/tiny_websockets_lib)
 ```
 
 Then, add the library to the executable by adding:
