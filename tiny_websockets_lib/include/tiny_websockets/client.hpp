@@ -16,7 +16,7 @@ namespace websockets {
 
   class WebsocketsClient;
     typedef std::function<void(WebsocketsClient&, WebsocketsMessage)> MessageCallback;
-    typedef std::function<void(WebsocketsClient&, WebsocketsEvent, WSInterfaceString data)> EventCallback;
+    typedef std::function<void(WebsocketsClient&, WebsocketsEvent, WSInterfaceString)> EventCallback;
 
   class WebsocketsClient : private internals::WebsocketsEndpoint {
   public:
