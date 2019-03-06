@@ -4,8 +4,6 @@
 #include <tiny_websockets/internals/data_frame.hpp>
 
 namespace websockets {
-    // The class the user will interact with as a message
-    // This message can be partial (so practically this is a Frame and not a message)
     enum class MessageType {
         Empty,
         Text, Binary,
@@ -17,7 +15,9 @@ namespace websockets {
     enum class MessageRole {
         Complete, First, Continuation, Last 
     };
-
+    
+    // The class the user will interact with as a message
+    // This message can be partial (so practically this is a Frame and not a message)
     struct WebsocketsMessage {
         WebsocketsMessage(MessageType msgType, WSInterfaceString msgData, MessageRole role = MessageRole::Complete) : _type(msgType), _data(msgData), _role(role) {}
         WebsocketsMessage() : WebsocketsMessage(MessageType::Empty, "", MessageRole::Complete) {}
