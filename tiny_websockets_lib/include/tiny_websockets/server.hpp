@@ -16,7 +16,7 @@ namespace websockets {
     WebsocketsServer& operator=(const WebsocketsServer&& other) = delete;
 
     bool available();
-        void listen(uint16_t port);
+    void listen(uint16_t port);
     bool poll();
     WebsocketsClient accept();
 
