@@ -40,7 +40,7 @@ namespace websockets {
 
             // skip key and whitespace
             idx++;
-            while(idx < line.size() && line[idx] == ' ' || line[idx] == '\t') idx++;
+            while(idx < line.size() && (line[idx] == ' ' || line[idx] == '\t')) idx++;
 
             // read value (until \r\n)
             while(idx < line.size() && line[idx] != '\r') {

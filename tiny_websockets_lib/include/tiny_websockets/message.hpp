@@ -19,7 +19,7 @@ namespace websockets {
     // The class the user will interact with as a message
     // This message can be partial (so practically this is a Frame and not a message)
     struct WebsocketsMessage {
-        WebsocketsMessage(MessageType msgType, WSInterfaceString msgData, MessageRole msgRole = MessageRole::Complete) : _type(msgType), _data(msgData), _role(msgRole) {}
+        WebsocketsMessage(MessageType msgType, WSString msgData, MessageRole msgRole = MessageRole::Complete) : _type(msgType), _data(internals::fromInternalString(msgData)), _role(msgRole) {}
         WebsocketsMessage() : WebsocketsMessage(MessageType::Empty, "", MessageRole::Complete) {}
 
         static WebsocketsMessage CreateFromFrame(internals::WebsocketsFrame frame, MessageType overrideType = MessageType::Empty) {
@@ -29,7 +29,7 @@ namespace websockets {
             }
 
             // deduce role
-            MessageRole msgRole;
+            MessageRole msgRole = MessageRole::Complete;
             if(frame.isNormalUnfragmentedMessage()) {
                 msgRole = MessageRole::Complete;
             } else if(frame.isBeginningOfFragmentsStream()) {

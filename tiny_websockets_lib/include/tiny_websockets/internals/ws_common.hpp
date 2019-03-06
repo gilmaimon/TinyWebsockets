@@ -26,9 +26,17 @@ namespace websockets {
     #define WSDefaultTcpClient websockets::network::LinuxTcpClient
     #define WSDefaultTcpServer websockets::network::LinuxTcpServer
 #elif defined(ESP8266)
+
+    #define PLATFORM_DOES_NOT_SUPPORT_BLOCKING_READ
+
     #include <tiny_websockets/network/esp8266/esp8266_tcp.hpp>
     #define WSDefaultTcpClient websockets::network::Esp8266TcpClient
+    #define WSDefaultTcpServer websockets::network::Esp8266TcpServer
 #elif defined(ESP32)
+
+    #define PLATFORM_DOES_NOT_SUPPORT_BLOCKING_READ
+
     #include <tiny_websockets/network/esp32/esp32_tcp.hpp>
     #define WSDefaultTcpClient websockets::network::Esp32TcpClient
+    #define WSDefaultTcpServer websockets::network::Esp32TcpServer
 #endif

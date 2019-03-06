@@ -4,6 +4,7 @@
 
 #include <tiny_websockets/internals/ws_common.hpp>
 #include <tiny_websockets/network/tcp_client.hpp>
+#include <tiny_websockets/network/tcp_server.hpp>
 #include <Arduino.h>
 
 #include <WiFi.h>
@@ -11,11 +12,11 @@
 namespace websockets { namespace network {
   class Esp32TcpClient : public TcpClient {
   public:
-    Esp32TcpClient() : _connected(false) {}
+    Esp32TcpClient() {}
+    Esp32TcpClient(WiFiClient c) : client(c) {}
 
     bool connect(WSString host, int port) {
-      this->_connected = client.connect(host.c_str(), port);
-      return available();
+      return client.connect(host.c_str(), port);
     }
 
     bool poll() {
@@ -23,27 +24,15 @@ namespace websockets { namespace network {
     }
 
     bool available() override {
-      /*
-        NOTE: it seems like there is a bug in esp32 impl of connected(). the method returns false
-                even when the connection is active and can still be used. This is why a socket is assumed here 
-            to be open unless it was manually closed. or an even happend (like an unsuccssfull read/write)
-            TODO: this is not optimal, and should be fixed in some way.
-      */
-      return this->_connected;
+      return static_cast<bool>(client);
     }
 
     void send(WSString data) override {
-      auto sent = client.write(reinterpret_cast<uint8_t*>(const_cast<char*>(data.c_str())), data.size());
-      if(sent < data.size()) {
-        this->_connected = false;
-      }
+      client.write(reinterpret_cast<uint8_t*>(const_cast<char*>(data.c_str())), data.size());
     }
 
     void send(uint8_t* data, uint32_t len) override {
-      auto sent = client.write(data, len);
-      if(sent < len) {
-        this->_connected = false;
-      }
+      client.write(data, len);
     }
     
     WSString readLine() override {
@@ -59,15 +48,11 @@ namespace websockets { namespace network {
     }
 
     void read(uint8_t* buffer, uint32_t len) override {
-      auto res = client.read(buffer, len);
-      if(res < 0) {
-        this->_connected = false;
-      }
+      client.read(buffer, len);
     }
 
     void close() override {
       client.stop();
-      _connected = false;
     }
 
     virtual ~Esp32TcpClient() {
@@ -75,7 +60,44 @@ namespace websockets { namespace network {
     }
   private:
     WiFiClient client;
-    bool _connected;
+  };
+
+  class Esp32TcpServer : public TcpServer {
+  public:
+    Esp32TcpServer() {}
+    bool poll() override {
+      return server.hasClient();
+    }
+
+    bool listen(uint16_t port) override {
+      server = WiFiServer(port);
+      server.begin(port);
+      return available();
+    }
+    
+    TcpClient* accept() override {
+      while(available()) {
+        auto client = server.available();
+        if(client) {
+          return new Esp32TcpClient{client};
+        }
+      }
+      return new Esp32TcpClient;
+    }
+
+    bool available() override {
+      return static_cast<bool>(server);
+    }
+    
+    void close() override {
+      server.close();
+    }
+
+    virtual ~Esp32TcpServer() {
+      if(available()) close();
+    }
+  private:
+    WiFiServer server;
   };
 }} // websockets::network
 

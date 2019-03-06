@@ -256,6 +256,9 @@ namespace websockets {
 
     WebsocketsMessage WebsocketsClient::readBlocking() {
         while(available()) {
+#ifdef PLATFORM_DOES_NOT_SUPPORT_BLOCKING_READ
+            while(available() && WebsocketsEndpoint::poll() == false) continue;
+#endif
             auto msg = WebsocketsEndpoint::recv();
             if(!msg.isEmpty()) return msg;
         }
@@ -263,7 +266,8 @@ namespace websockets {
     }
 
     bool WebsocketsClient::send(WSInterfaceString data) {
-        return this->send(data.c_str(), data.size());
+        auto str = internals::fromInterfaceString(data);
+        return this->send(str.c_str(), str.size());
     }
 
     bool WebsocketsClient::send(const char* data, size_t len) {
@@ -292,7 +296,8 @@ namespace websockets {
     }
 
     bool WebsocketsClient::sendBinary(WSInterfaceString data) {
-        return this->send(data.c_str(), data.size());
+        auto str = internals::fromInterfaceString(data);
+        return this->sendBinary(str.c_str(), str.size());
     }
 
     bool WebsocketsClient::sendBinary(const char* data, size_t len) {
