@@ -15,11 +15,11 @@ namespace websockets {
     enum class MessageRole {
         Complete, First, Continuation, Last 
     };
-    
+
     // The class the user will interact with as a message
     // This message can be partial (so practically this is a Frame and not a message)
     struct WebsocketsMessage {
-        WebsocketsMessage(MessageType msgType, WSInterfaceString msgData, MessageRole role = MessageRole::Complete) : _type(msgType), _data(msgData), _role(role) {}
+        WebsocketsMessage(MessageType msgType, WSInterfaceString msgData, MessageRole msgRole = MessageRole::Complete) : _type(msgType), _data(msgData), _role(msgRole) {}
         WebsocketsMessage() : WebsocketsMessage(MessageType::Empty, "", MessageRole::Complete) {}
 
         static WebsocketsMessage CreateFromFrame(internals::WebsocketsFrame frame, MessageType overrideType = MessageType::Empty) {
@@ -29,18 +29,18 @@ namespace websockets {
             }
 
             // deduce role
-            MessageRole role;
+            MessageRole msgRole;
             if(frame.isNormalUnfragmentedMessage()) {
-                role = MessageRole::Complete;
+                msgRole = MessageRole::Complete;
             } else if(frame.isBeginningOfFragmentsStream()) {
-                role = MessageRole::First;
+                msgRole = MessageRole::First;
             } else if(frame.isContinuesFragment()) {
-                role = MessageRole::Continuation;
+                msgRole = MessageRole::Continuation;
             } else if(frame.isEndOfFragmentsStream()) {
-                role = MessageRole::Last;
+                msgRole = MessageRole::Last;
             }
 
-            return WebsocketsMessage(type, frame.payload, role);
+            return WebsocketsMessage(type, frame.payload, msgRole);
         }
         
         // for validation
