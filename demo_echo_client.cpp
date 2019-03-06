@@ -21,8 +21,8 @@
 
 using namespace websockets;
 
- int main() {
-   WebsocketsClient client;
+int main() {
+  WebsocketsClient client;
   client.connect("ws://echo.websocket.org/");
 
   client.onMessage([&](WebsocketsClient&, WebsocketsMessage message){
