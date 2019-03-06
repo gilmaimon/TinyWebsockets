@@ -38,14 +38,20 @@ TEST_CASE( "Testing sending fragmented messages - Receiving the messages with No
   volatile int recvdCount = 0;
 
   client.onMessage([&recvdCount](WebsocketsClient&, auto message){
-      std::cout << (message.isContinuation()? "(continuation) " : "") << "Message Got: " << message.data() << std::endl;
-      REQUIRE( message.isContinuation() == true );
+      std::cout << (message.isPartial()? "(continuation) " : "") << "Message Got: " << message.data() << std::endl;
+      REQUIRE( message.isPartial() == true );
       if(recvdCount == 0) {
         REQUIRE( message.data() == "Msg: " );
+        REQUIRE( message.isText() == true );
+        REQUIRE( message.isFirst() == true );
       } else if(recvdCount == 1) {
         REQUIRE( message.data() == "Hello World" );
+        REQUIRE( message.isText() == true );
+        REQUIRE( message.isContinuation() == true );
       } else if(recvdCount == 2) {
         REQUIRE( message.data() == "." );
+        REQUIRE( message.isText() == true );
+        REQUIRE( message.isLast() == true );
       } else if(recvdCount == 3) {
         REQUIRE( "THIS STATE SHOULD NOT OCCUR" == nullptr);
         recvdCount = 3;

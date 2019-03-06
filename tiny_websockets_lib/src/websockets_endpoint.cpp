@@ -4,7 +4,8 @@ namespace websockets { namespace internals {
     WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client, FragmentsPolicy fragmentsPolicy) : 
         _client(client),
         _fragmentsPolicy(fragmentsPolicy),
-        _recvMode(RecvMode_Normal) {
+        _recvMode(RecvMode_Normal),
+        _streamBuilder(fragmentsPolicy == FragmentsPolicy_Notify? true: false) {
         // Empty
     }
 
@@ -111,7 +112,7 @@ namespace websockets { namespace internals {
                 this->_streamBuilder.first(frame);
                 // if policy is set to notify, return the frame to the user
                 if(this->_fragmentsPolicy == FragmentsPolicy_Notify) {
-                    return WebsocketsMessage(ContentType::Continuation, frame.payload);
+                    return WebsocketsMessage(this->_streamBuilder.type(), frame.payload, MessageRole::First);
                 }
                 else return {};
             }
@@ -121,7 +122,7 @@ namespace websockets { namespace internals {
             if(this->_streamBuilder.isOk()) {
                 // if policy is set to notify, return the frame to the user
                 if(this->_fragmentsPolicy == FragmentsPolicy_Notify) {
-                    return WebsocketsMessage(ContentType::Continuation, frame.payload);
+                    return WebsocketsMessage(this->_streamBuilder.type(), frame.payload, MessageRole::Continuation);
                 }
                 else return {};
             }
@@ -133,13 +134,14 @@ namespace websockets { namespace internals {
                 // if policy is set to notify, return the frame to the user
                 if(this->_fragmentsPolicy == FragmentsPolicy_Aggregate) {
                     auto completeMessage = this->_streamBuilder.build();
-                    this->_streamBuilder = {};
+                    this->_streamBuilder = WebsocketsMessage::StreamBuilder(false);
                     this->handleMessageInternally(completeMessage);
                     return completeMessage;
                 }
                 else { // in case of notify policy
-                    this->_streamBuilder = {};
-                    return WebsocketsMessage(ContentType::Continuation, frame.payload);
+                    auto messageType = this->_streamBuilder.type();
+                    this->_streamBuilder = WebsocketsMessage::StreamBuilder(true);
+                    return WebsocketsMessage(messageType, frame.payload, MessageRole::Last);
                 }                
             }
         } 

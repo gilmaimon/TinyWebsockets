@@ -232,7 +232,9 @@ namespace websockets {
         bool messageReceived = false;
         while(available() && WebsocketsEndpoint::poll()) {
             auto msg = WebsocketsEndpoint::recv();
-            if(msg.isEmpty()) continue;
+            if(msg.isEmpty()) {
+                continue;
+            }
             messageReceived = true;
             
             if(msg.isBinary() || msg.isText()) {
