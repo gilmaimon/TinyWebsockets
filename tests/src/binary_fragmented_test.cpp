@@ -9,7 +9,6 @@
 #include <chrono>
 
 using namespace websockets;
-using namespace std::string_literals;
 
 void test_server() {
     WebsocketsServer server;
@@ -23,7 +22,7 @@ void test_server() {
 
       REQUIRE( msg.isBinary() == true );
       REQUIRE( msg.data().size() == 21);
-      REQUIRE( msg.data() == "Hello Server\xba\xbe\x00\xca\xfe-END"s);
+      REQUIRE( msg.data() == std::string("Hello Server\xba\xbe\x00\xca\xfe-END", 21));
     }
 
     connectedClient.close();
