@@ -398,6 +398,7 @@ namespace websockets {
         if(available()) {
             WebsocketsEndpoint::close();
             this->_connectionOpen = false;
+            _handleClose({});
         }
     }
 
