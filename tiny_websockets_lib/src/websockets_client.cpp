@@ -226,7 +226,7 @@ namespace websockets {
 
     void WebsocketsClient::onMessage(PartialMessageCallback callback) {
         this->_messagesCallback = [&callback](WebsocketsClient&, WebsocketsMessage msg) {
-            callback(std::move(msg));
+            callback(msg);
         };
     }
 
@@ -236,7 +236,7 @@ namespace websockets {
 
     void WebsocketsClient::onEvent(PartialEventCallback callback) {
         this->_eventsCallback = [&callback](WebsocketsClient&, WebsocketsEvent event, WSInterfaceString data) {
-            callback(std::move(event), std::move(data));
+            callback(event, data);
         };
     }
 
