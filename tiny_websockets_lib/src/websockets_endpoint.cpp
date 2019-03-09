@@ -225,20 +225,17 @@ namespace websockets { namespace internals {
     bool WebsocketsEndpoint::sendHeader(uint64_t len, uint8_t opcode, bool fin, bool mask) {
         if(len < 126) {
             auto header = MakeHeader<Header>(len, opcode, fin, mask);
-            header.payload = len;
-
+            
             // send the 2 bytes long header
             this->_client.send(reinterpret_cast<uint8_t*>(&header), 2 + 0);
         } else if(len < 65536) {
             auto header = MakeHeader<HeaderWithExtended16>(len, opcode, fin, mask);
-            header.payload = 126;
             header.extendedPayload = (len << 8) | (len >> 8);
 
             // send the 4 bytes long header
             this->_client.send(reinterpret_cast<uint8_t*>(&header), 2 + 2);
         } else {
             auto header = MakeHeader<HeaderWithExtended64>(len, opcode, fin, mask);
-            header.payload = 127;
             // header.extendedPayload = swapEndianess(len);
             header.extendedPayload = swapEndianess(len);
 

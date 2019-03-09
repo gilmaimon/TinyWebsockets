@@ -54,6 +54,16 @@ namespace websockets { namespace internals {
     header.flags = 0;
     header.opcode = opcode;
     header.mask = mask? 1: 0;
+
+    // set payload
+    if(len < 126) {
+      header.payload = len;
+    } else if(len < 65536) {
+      header.payload = 126;
+    } else {
+      header.payload = 127;
+    }
+
     return header;
   }
 
