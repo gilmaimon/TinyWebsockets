@@ -43,5 +43,7 @@ namespace websockets {
 
         WebsocketsMessage handleFrameInStreamingMode(WebsocketsFrame& frame);
         WebsocketsMessage handleFrameInStandardMode(WebsocketsFrame& frame);
+
+        bool sendHeader(uint64_t len, uint8_t opcode, bool fin, bool mask);
     };
 }} // websockets::internals

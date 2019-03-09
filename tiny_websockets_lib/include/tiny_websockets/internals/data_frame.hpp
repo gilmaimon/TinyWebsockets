@@ -48,6 +48,15 @@ namespace websockets { namespace internals {
     }
   };
 
+  template <class HeaderTy> HeaderTy MakeHeader(size_t len, uint8_t opcode, bool fin, bool mask) {
+    HeaderTy header;
+    header.fin = fin;
+    header.flags = 0;
+    header.opcode = opcode;
+    header.mask = mask? 1: 0;
+    return header;
+  }
+
   struct Header {
     uint8_t opcode : 4;
     uint8_t flags : 3;
@@ -56,7 +65,11 @@ namespace websockets { namespace internals {
     uint8_t mask : 1;
   };
 
-  struct HeaderWithExtended : Header {
+  struct HeaderWithExtended16 : Header {
     uint16_t extendedPayload;
+  };
+
+  struct HeaderWithExtended64 : Header {
+    uint64_t extendedPayload;
   };
 }} // websockets::internals

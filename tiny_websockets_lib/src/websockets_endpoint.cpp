@@ -1,6 +1,33 @@
 #include <tiny_websockets/internals/websockets_endpoint.hpp>
 
 namespace websockets { namespace internals {
+
+    uint32_t swapEndianess(uint32_t num) {
+        uint32_t result = 0;
+
+        uint32_t highest = (num >> 24);
+        uint32_t second = (num << 8) >> 24;
+        uint32_t third = (num << 16) >> 24;
+        uint32_t lowest = (num << 24) >> 24;
+
+        return highest | (second << 8) | (third << 16) | (lowest << 24);
+    }
+
+    uint64_t swapEndianess(uint64_t num) {
+        uint64_t result = 0;
+
+        uint32_t upper = (num >> 32);
+        uint32_t lower = (num << 32) >> 32;
+    
+        upper = swapEndianess(upper);
+        lower = swapEndianess(lower);
+    
+        uint64_t upperLong = upper;
+        uint64_t lowerLong = lower;
+        
+        return upperLong | (lowerLong << 32);
+    }
+
     WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client, FragmentsPolicy fragmentsPolicy) : 
         _client(client),
         _fragmentsPolicy(fragmentsPolicy),
@@ -32,6 +59,10 @@ namespace websockets { namespace internals {
         }
         else if (header.payload == 127) {
             // TODO: read next 64 bits as payload length and handle such very long messages
+            uint64_t tmp = 0;
+            socket.read(reinterpret_cast<uint8_t*>(&tmp), 8);
+            extendedPayload = swapEndianess(tmp);
+            //extendedPayload = swapEndianess(tmp);
         }
 
         return extendedPayload;
@@ -191,29 +222,37 @@ namespace websockets { namespace internals {
         return send(data.c_str(), data.size(), opcode, fin, mask, maskingKey);
     }
 
-    bool WebsocketsEndpoint::send(const char* data, size_t len, uint8_t opcode, bool fin, bool mask, uint8_t maskingKey[4]) {
-        HeaderWithExtended header;
-        header.fin = fin;
-        header.flags = 0;
-        header.opcode = opcode;
-        header.mask = mask? 1: 0;
-
-        size_t headerLen = 2;
-
+    bool WebsocketsEndpoint::sendHeader(uint64_t len, uint8_t opcode, bool fin, bool mask) {
         if(len < 126) {
+            auto header = MakeHeader<Header>(len, opcode, fin, mask);
             header.payload = len;
+
+            // send the 2 bytes long header
+            this->_client.send(reinterpret_cast<uint8_t*>(&header), 2 + 0);
         } else if(len < 65536) {
+            auto header = MakeHeader<HeaderWithExtended16>(len, opcode, fin, mask);
             header.payload = 126;
             header.extendedPayload = (len << 8) | (len >> 8);
-            headerLen = 4; // with 2 bytes of extra length
+
+            // send the 4 bytes long header
+            this->_client.send(reinterpret_cast<uint8_t*>(&header), 2 + 2);
         } else {
-            // TODO properly handle very long message
-            // ?? header.extraExtenedePayload;
+            auto header = MakeHeader<HeaderWithExtended64>(len, opcode, fin, mask);
             header.payload = 127;
+            // header.extendedPayload = swapEndianess(len);
+            header.extendedPayload = swapEndianess(len);
+
+            // send the 10 bytes long header
+            this->_client.send(reinterpret_cast<uint8_t*>(&header), 2);
+            this->_client.send(reinterpret_cast<uint8_t*>(&header.extendedPayload), 8);
         }
-        
-        // send header
-        this->_client.send(reinterpret_cast<uint8_t*>(&header), headerLen);
+
+        return this->_client.available();
+    }
+
+    bool WebsocketsEndpoint::send(const char* data, size_t len, uint8_t opcode, bool fin, bool mask, uint8_t maskingKey[4]) {
+        // send the header
+        sendHeader(len, opcode, fin, mask);
 
         // if masking is set, send the masking key
         if(mask) {
