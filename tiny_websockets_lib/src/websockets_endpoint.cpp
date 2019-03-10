@@ -1,6 +1,44 @@
 #include <tiny_websockets/internals/websockets_endpoint.hpp>
 
-namespace websockets { namespace internals {
+namespace websockets { 
+
+    CloseReason GetCloseReason(uint16_t reasonCode) {
+        switch(reasonCode) {
+            case CloseReason_NormalClosure: 
+                return CloseReason_NormalClosure;
+            
+            case CloseReason_GoingAway: 
+                return CloseReason_GoingAway;
+            
+            case CloseReason_ProtocolError: 
+                return CloseReason_ProtocolError;
+            
+            case CloseReason_UnsupportedData: 
+                return CloseReason_UnsupportedData;
+            
+            case CloseReason_AbnormalClosure: 
+                return CloseReason_AbnormalClosure;
+            
+            case CloseReason_InvalidPayloadData: 
+                return CloseReason_InvalidPayloadData;
+            
+            case CloseReason_PolicyViolation: 
+                return CloseReason_PolicyViolation;
+            
+            case CloseReason_MessageTooBig: 
+                return CloseReason_MessageTooBig;
+            
+            case CloseReason_NoStatusRcvd: 
+                return CloseReason_NoStatusRcvd;
+            
+            case CloseReason_InternalServerError: 
+                return CloseReason_InternalServerError;
+
+            default: return CloseReason_None;
+        }
+    }    
+
+namespace internals {
 
     uint32_t swapEndianess(uint32_t num) {
         uint32_t result = 0;
@@ -32,7 +70,8 @@ namespace websockets { namespace internals {
         _client(client),
         _fragmentsPolicy(fragmentsPolicy),
         _recvMode(RecvMode_Normal),
-        _streamBuilder(fragmentsPolicy == FragmentsPolicy_Notify? true: false) {
+        _streamBuilder(fragmentsPolicy == FragmentsPolicy_Notify? true: false),
+        _closeReason(CloseReason_None) {
         // Empty
     }
 
@@ -223,7 +262,15 @@ namespace websockets { namespace internals {
         if(msg.isPing()) {
             pong(internals::fromInterfaceString(msg.data()));
         } else if(msg.isClose()) {
-            close();
+            // is there a reason field
+            if(msg.data().size() >= 2) {
+                uint16_t reason = *(reinterpret_cast<const uint16_t*>(msg.data().c_str()));
+                reason = reason >> 8 | reason << 8;
+                this->_closeReason = GetCloseReason(reason);
+            } else {
+                this->_closeReason = CloseReason_GoingAway;
+            }
+            close(this->_closeReason);
         }
     }
 
@@ -278,11 +325,22 @@ namespace websockets { namespace internals {
         return true; // TODO dont assume success
     }
 
-    void WebsocketsEndpoint::close() {
-        if(this->_client.available()) {
+    void WebsocketsEndpoint::close(CloseReason reason) {
+        if(!this->_client.available()) return;
+
+        this->_closeReason = reason;
+        if(reason == CloseReason_None) {
             send(nullptr, 0, internals::ContentType::Close);
-            this->_client.close();
+        } else {
+            uint16_t reasonNum = static_cast<uint16_t>(reason);
+            reasonNum = (reasonNum >> 8) | (reasonNum << 8);
+            send(reinterpret_cast<const char*>(&reasonNum), 2, internals::ContentType::Close);
         }
+        this->_client.close();
+    }
+
+    CloseReason WebsocketsEndpoint::getCloseReason() {
+        return _closeReason;
     }
 
     bool WebsocketsEndpoint::pong(WSString msg) {

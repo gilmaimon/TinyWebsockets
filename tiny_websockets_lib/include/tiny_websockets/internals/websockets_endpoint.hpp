@@ -10,6 +10,22 @@ namespace websockets {
         FragmentsPolicy_Aggregate,
         FragmentsPolicy_Notify
     };
+
+    enum CloseReason {
+        CloseReason_None                =       -1,
+        CloseReason_NormalClosure       =       1000,
+        CloseReason_GoingAway           =       1001,
+        CloseReason_ProtocolError       =       1002,
+        CloseReason_UnsupportedData     =       1003,
+        CloseReason_NoStatusRcvd        =       1005,
+        CloseReason_AbnormalClosure     =       1006,
+        CloseReason_InvalidPayloadData  =       1007,
+        CloseReason_PolicyViolation     =       1008,
+        CloseReason_MessageTooBig       =       1009,
+        CloseReason_InternalServerError =       1011,
+    };
+
+    CloseReason GetCloseReason(uint16_t reasonCode);
     
     namespace internals {
     
@@ -23,7 +39,9 @@ namespace websockets {
         
         bool ping(WSString msg = "");
         bool pong(WSString msg = "");
-        void close();
+
+        void close(CloseReason reason = CloseReason_NormalClosure);
+        CloseReason getCloseReason();
 
         void setFragmentsPolicy(FragmentsPolicy newPolicy);
         FragmentsPolicy getFragmentsPolicy();
@@ -37,6 +55,7 @@ namespace websockets {
             RecvMode_Streaming
         } _recvMode;
         WebsocketsMessage::StreamBuilder _streamBuilder;
+        CloseReason _closeReason;
 
         WebsocketsFrame _recv();
         void handleMessageInternally(WebsocketsMessage& msg);

@@ -394,12 +394,16 @@ namespace websockets {
         return WebsocketsEndpoint::pong(internals::fromInterfaceString(data));
     }
 
-    void WebsocketsClient::close() {
+    void WebsocketsClient::close(CloseReason reason) {
         if(available()) {
-            WebsocketsEndpoint::close();
+            WebsocketsEndpoint::close(reason);
             this->_connectionOpen = false;
             _handleClose({});
         }
+    }
+
+    CloseReason WebsocketsClient::getCloseReason() {
+        return WebsocketsEndpoint::getCloseReason();
     }
 
     void WebsocketsClient::_handlePing(WebsocketsMessage message) {
