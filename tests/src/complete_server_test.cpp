@@ -18,7 +18,7 @@ void test_server() {
     auto connectedClient = server.accept();
     REQUIRE( connectedClient.available() );
 
-    connectedClient.onEvent([&eventIdx](WebsocketsClient&, WebsocketsEvent event, std::string data){
+    connectedClient.onEvent([&](WebsocketsClient&, WebsocketsEvent event, std::string data){
         switch(eventIdx) {
             case 0:
                 REQUIRE( event == WebsocketsEvent::GotPong );
@@ -27,7 +27,7 @@ void test_server() {
 
             case 1:
                 REQUIRE( event == WebsocketsEvent::ConnectionClosed );
-                REQUIRE( data == "" );
+                REQUIRE( connectedClient.getCloseReason() == CloseReason_NormalClosure );
                 break;
 
             default:
@@ -60,7 +60,7 @@ TEST_CASE( "Testing Complete client/server handling - complete callback" ) {
         REQUIRE( msg.data() == "Hello Client" );
     });
 
-    client.onEvent([&eventIdx](WebsocketsClient&, WebsocketsEvent event, std::string data){
+    client.onEvent([&](WebsocketsClient&, WebsocketsEvent event, std::string data){
         switch(eventIdx) {
             case 0:
                 REQUIRE( event == WebsocketsEvent::ConnectionOpened );
@@ -74,7 +74,7 @@ TEST_CASE( "Testing Complete client/server handling - complete callback" ) {
 
             case 2:
                 REQUIRE( event == WebsocketsEvent::ConnectionClosed );
-                REQUIRE( data == "" );
+                REQUIRE( client.getCloseReason() == CloseReason_NormalClosure );
                 break;
 
             default:
@@ -108,7 +108,7 @@ TEST_CASE( "Testing Complete client/server handling - partial callbacks" ) {
         REQUIRE( msg.data() == "Hello Client" );
     });
 
-    client.onEvent([&eventIdx](WebsocketsEvent event, std::string data){
+    client.onEvent([&](WebsocketsEvent event, std::string data){
         switch(eventIdx) {
             case 0:
                 REQUIRE( event == WebsocketsEvent::ConnectionOpened );
@@ -122,7 +122,7 @@ TEST_CASE( "Testing Complete client/server handling - partial callbacks" ) {
 
             case 2:
                 REQUIRE( event == WebsocketsEvent::ConnectionClosed );
-                REQUIRE( data == "" );
+                REQUIRE( client.getCloseReason() == CloseReason_NormalClosure );
                 break;
 
             default:
