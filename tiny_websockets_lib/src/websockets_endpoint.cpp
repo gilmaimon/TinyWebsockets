@@ -100,6 +100,12 @@ namespace websockets { namespace internals {
         auto header = readHeaderFromSocket(this->_client);
         uint64_t payloadLength = readExtendedPayloadLength(this->_client, header);
 
+#ifdef _WS_CONFIG_MAX_MESSAGE_SIZE
+        if(payloadLength > _WS_CONFIG_MAX_MESSAGE_SIZE) {
+            return {};
+        }
+#endif
+
         uint8_t maskingKey[4];
         // if masking is set
         if (header.mask) {
@@ -201,6 +207,9 @@ namespace websockets { namespace internals {
 
     WebsocketsMessage WebsocketsEndpoint::recv() {        
         auto frame = _recv();
+        if (frame.isEmpty()) {
+            return {};
+        }
 
         if(this->_recvMode == RecvMode_Normal) {
             return handleFrameInStandardMode(frame);
@@ -248,6 +257,13 @@ namespace websockets { namespace internals {
     }
 
     bool WebsocketsEndpoint::send(const char* data, size_t len, uint8_t opcode, bool fin, bool mask, uint8_t maskingKey[4]) {
+
+#ifdef _WS_CONFIG_MAX_MESSAGE_SIZE
+        if(len > _WS_CONFIG_MAX_MESSAGE_SIZE) {
+            return false;
+        }
+#endif
+        
         // send the header
         sendHeader(len, opcode, fin, mask);
 

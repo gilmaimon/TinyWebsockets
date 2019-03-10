@@ -31,6 +31,10 @@ namespace websockets { namespace internals {
       return fin && (opcode == 0x8 || opcode == 0x9 || opcode == 0xA);
     }
 
+    bool isEmpty() {
+      return (fin == 0) && (opcode == 0) && (payload_length == 0);
+    }
+
     bool isBeginningOfFragmentsStream() const {
       return (fin == 0) && (opcode != 0);
     }
