@@ -19,6 +19,9 @@ namespace websockets { namespace network {
     if(_socket == INVALID_SOCKET) {
       return INVALID_SOCKET;
     }
+    
+    int set = 1;
+    setsockopt(this->_socket SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
 
     struct sockaddr_in server;
 
@@ -171,6 +174,9 @@ namespace websockets { namespace network {
     
     // return default in case of accept error
     if (clientSock < 0) return INVALID_SOCKET;
+    
+    int set = 1;
+    setsockopt(clientSock, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
 
     return clientSock;
   }
