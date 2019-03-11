@@ -193,7 +193,7 @@ namespace websockets {
 
         auto head = this->_client->readLine();
         if(!doestStartsWith(head, "HTTP/1.1 101")) {
-            close();
+            close(CloseReason_ProtocolError);
             return false;
         }
 
@@ -212,7 +212,7 @@ namespace websockets {
         bool serverAcceptMismatch = parsedResponse.serverAccept != handshake.expectedAcceptKey;
 #endif
         if(parsedResponse.isSuccess == false || serverAcceptMismatch) {
-            close();
+            close(CloseReason_ProtocolError);
             return false;
         }
 
@@ -415,13 +415,13 @@ namespace websockets {
     }
 
     void WebsocketsClient::_handleClose(WebsocketsMessage message) {
-        if(available()) {
-            close();
-        }
         this->_eventsCallback(*this, WebsocketsEvent::ConnectionClosed, message.data());
     }
 
     WebsocketsClient::~WebsocketsClient() {
+        if(available()) {
+            this->close(CloseReason_GoingAway);
+        }
         delete this->_client;
     }
 }

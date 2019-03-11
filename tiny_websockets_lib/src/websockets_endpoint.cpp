@@ -223,7 +223,7 @@ namespace internals {
         } 
         
         // Error
-        close();
+        close(CloseReason_ProtocolError);
         return {};
     }
 
@@ -240,7 +240,7 @@ namespace internals {
 
         // This is an error. a bad combination of opcodes and fin flag arrived.
         // Close the connectiong and TODO: indicate ERROR
-        close();
+        close(CloseReason_ProtocolError);
         return {};
     }
 
