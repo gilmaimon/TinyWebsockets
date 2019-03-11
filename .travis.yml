@@ -102,6 +102,7 @@ script:
   - cd $TRAVIS_BUILD_DIR/build
   - cmake ..
   - make
+  - cd tests
   #- ctest --verbose
   - ./basic_server_test
   - ./binary_basic_test
