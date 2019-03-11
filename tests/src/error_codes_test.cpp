@@ -65,3 +65,52 @@ TEST_CASE( "Localhost Server, Initiating Close with code" ) {
     REQUIRE ( client.available() == false );
     REQUIRE ( client.getCloseReason() == CloseReason_PolicyViolation );
 }
+
+void test_server_expects_normal_close() {
+    WebsocketsServer server;
+    server.listen(8189);
+
+    auto connectedClient = server.accept();
+    REQUIRE( connectedClient.available() );
+    while(connectedClient.available()) connectedClient.poll();
+
+    REQUIRE ( connectedClient.getCloseReason() == CloseReason_NormalClosure );
+}
+
+TEST_CASE( "In-Program server, testing for default close() code" ) { 
+    std::thread serverThread(test_server_expects_normal_close);
+
+    std::this_thread::sleep_for (std::chrono::seconds(1));
+    
+    WebsocketsClient client;
+    REQUIRE( client.connect("localhost", 8189, "/") );
+    REQUIRE( client.available() );
+
+    client.close();
+    serverThread.join();
+}
+
+void test_server_expects_going_away() {
+    WebsocketsServer server;
+    server.listen(8189);
+
+    auto connectedClient = server.accept();
+    REQUIRE( connectedClient.available() );
+    while(connectedClient.available()) connectedClient.poll();
+
+    REQUIRE ( connectedClient.getCloseReason() == CloseReason_GoingAway );
+}
+
+TEST_CASE( "In-Program server, testing for default dtor code" ) { 
+    std::thread serverThread(test_server_expects_going_away);
+
+    std::this_thread::sleep_for (std::chrono::seconds(1));
+
+    {
+        WebsocketsClient client;
+        REQUIRE( client.connect("localhost", 8189, "/") );
+        REQUIRE( client.available() );
+    } // At this point the d'tor of client will be called
+
+    serverThread.join();
+}
