@@ -66,7 +66,7 @@ namespace internals {
         return upperLong | (lowerLong << 32);
     }
 
-    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient& client, FragmentsPolicy fragmentsPolicy) : 
+    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient* client, FragmentsPolicy fragmentsPolicy) : 
         _client(client),
         _fragmentsPolicy(fragmentsPolicy),
         _recvMode(RecvMode_Normal),
@@ -75,8 +75,50 @@ namespace internals {
         // Empty
     }
 
+    WebsocketsEndpoint::WebsocketsEndpoint(const WebsocketsEndpoint& other) : 
+        _client(other._client), 
+        _fragmentsPolicy(other._fragmentsPolicy), 
+        _recvMode(other._recvMode), 
+        _streamBuilder(other._streamBuilder), 
+        _closeReason(other._closeReason) {
+
+        const_cast<WebsocketsEndpoint&>(other)._client = nullptr;
+    }
+    WebsocketsEndpoint::WebsocketsEndpoint(const WebsocketsEndpoint&& other) : 
+        _client(other._client), 
+        _fragmentsPolicy(other._fragmentsPolicy), 
+        _recvMode(other._recvMode), 
+        _streamBuilder(other._streamBuilder), 
+        _closeReason(other._closeReason) {
+
+        const_cast<WebsocketsEndpoint&>(other)._client = nullptr;
+    }
+
+    WebsocketsEndpoint& WebsocketsEndpoint::operator=(const WebsocketsEndpoint& other) {
+        this->_client = other._client;
+        this->_fragmentsPolicy = other._fragmentsPolicy;
+        this->_recvMode = other._recvMode;
+        this->_streamBuilder = other._streamBuilder;
+        this->_closeReason = other._closeReason;
+
+        const_cast<WebsocketsEndpoint&>(other)._client = nullptr;
+
+        return *this;
+    }
+    WebsocketsEndpoint& WebsocketsEndpoint::operator=(const WebsocketsEndpoint&& other) {
+        this->_client = other._client;
+        this->_fragmentsPolicy = other._fragmentsPolicy;
+        this->_recvMode = other._recvMode;
+        this->_streamBuilder = other._streamBuilder;
+        this->_closeReason = other._closeReason;
+
+        const_cast<WebsocketsEndpoint&>(other)._client = nullptr;
+
+        return *this;
+    }
+
     bool WebsocketsEndpoint::poll() {
-        return this->_client.poll();
+        return this->_client->poll();
     }
 
     Header readHeaderFromSocket(network::TcpClient& socket) {
@@ -136,8 +178,8 @@ namespace internals {
     }
 
     WebsocketsFrame WebsocketsEndpoint::_recv() {
-        auto header = readHeaderFromSocket(this->_client);
-        uint64_t payloadLength = readExtendedPayloadLength(this->_client, header);
+        auto header = readHeaderFromSocket(*this->_client);
+        uint64_t payloadLength = readExtendedPayloadLength(*this->_client, header);
 
 #ifdef _WS_CONFIG_MAX_MESSAGE_SIZE
         if(payloadLength > _WS_CONFIG_MAX_MESSAGE_SIZE) {
@@ -148,11 +190,11 @@ namespace internals {
         uint8_t maskingKey[4];
         // if masking is set
         if (header.mask) {
-            readMaskingKey(this->_client, maskingKey);
+            readMaskingKey(*this->_client, maskingKey);
         }
 
         // read the message's payload (data) according to the read length
-        WSString data = readData(this->_client, payloadLength);
+        WSString data = readData(*this->_client, payloadLength);
 
         // if masking is set un-mask the message
         if (header.mask) {
@@ -283,24 +325,24 @@ namespace internals {
             auto header = MakeHeader<Header>(len, opcode, fin, mask);
             
             // send the 2 bytes long header
-            this->_client.send(reinterpret_cast<uint8_t*>(&header), 2 + 0);
+            this->_client->send(reinterpret_cast<uint8_t*>(&header), 2 + 0);
         } else if(len < 65536) {
             auto header = MakeHeader<HeaderWithExtended16>(len, opcode, fin, mask);
             header.extendedPayload = (len << 8) | (len >> 8);
 
             // send the 4 bytes long header
-            this->_client.send(reinterpret_cast<uint8_t*>(&header), 2 + 2);
+            this->_client->send(reinterpret_cast<uint8_t*>(&header), 2 + 2);
         } else {
             auto header = MakeHeader<HeaderWithExtended64>(len, opcode, fin, mask);
             // header.extendedPayload = swapEndianess(len);
             header.extendedPayload = swapEndianess(len);
 
             // send the 10 bytes long header
-            this->_client.send(reinterpret_cast<uint8_t*>(&header), 2);
-            this->_client.send(reinterpret_cast<uint8_t*>(&header.extendedPayload), 8);
+            this->_client->send(reinterpret_cast<uint8_t*>(&header), 2);
+            this->_client->send(reinterpret_cast<uint8_t*>(&header.extendedPayload), 8);
         }
 
-        return this->_client.available();
+        return this->_client->available();
     }
 
     bool WebsocketsEndpoint::send(const char* data, size_t len, uint8_t opcode, bool fin, bool mask, uint8_t maskingKey[4]) {
@@ -316,17 +358,17 @@ namespace internals {
 
         // if masking is set, send the masking key
         if(mask) {
-            this->_client.send(reinterpret_cast<uint8_t*>(maskingKey), 4);
+            this->_client->send(reinterpret_cast<uint8_t*>(maskingKey), 4);
         }
 
         if(len > 0) {
-            this->_client.send(reinterpret_cast<uint8_t*>(const_cast<char*>(data)), len);
+            this->_client->send(reinterpret_cast<uint8_t*>(const_cast<char*>(data)), len);
         }
         return true; // TODO dont assume success
     }
 
     void WebsocketsEndpoint::close(CloseReason reason) {
-        if(!this->_client.available()) return;
+        if(!this->_client->available()) return;
 
         this->_closeReason = reason;
         if(reason == CloseReason_None) {
@@ -336,7 +378,7 @@ namespace internals {
             reasonNum = (reasonNum >> 8) | (reasonNum << 8);
             send(reinterpret_cast<const char*>(&reasonNum), 2, internals::ContentType::Close);
         }
-        this->_client.close();
+        this->_client->close();
     }
 
     CloseReason WebsocketsEndpoint::getCloseReason() {

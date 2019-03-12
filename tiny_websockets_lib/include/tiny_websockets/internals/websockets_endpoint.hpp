@@ -31,7 +31,14 @@ namespace websockets {
     
     class WebsocketsEndpoint {
     public:
-        WebsocketsEndpoint(network::TcpClient& socket, FragmentsPolicy fragmentsPolicy = FragmentsPolicy_Aggregate);
+        WebsocketsEndpoint(network::TcpClient* socket, FragmentsPolicy fragmentsPolicy = FragmentsPolicy_Aggregate);
+
+        WebsocketsEndpoint(const WebsocketsEndpoint& other);
+        WebsocketsEndpoint(const WebsocketsEndpoint&& other);
+        
+        WebsocketsEndpoint& operator=(const WebsocketsEndpoint& other);
+        WebsocketsEndpoint& operator=(const WebsocketsEndpoint&& other);
+
         bool poll();
         WebsocketsMessage recv();
         bool send(const char* data, size_t len, uint8_t opcode, bool fin = true, bool mask = false, uint8_t maskingKey[4] = nullptr);    
@@ -48,7 +55,7 @@ namespace websockets {
 
         virtual ~WebsocketsEndpoint();
     private:
-        network::TcpClient& _client;
+        network::TcpClient* _client;
         FragmentsPolicy _fragmentsPolicy;
         enum RecvMode {
             RecvMode_Normal,

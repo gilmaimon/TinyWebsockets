@@ -6,13 +6,73 @@
 
 namespace websockets {
     WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
-        WebsocketsEndpoint(*client), 
+        WebsocketsEndpoint(client), 
         _client(client),
         _connectionOpen(client->available()),
         _messagesCallback([](WebsocketsClient&, WebsocketsMessage){}),
         _eventsCallback([](WebsocketsClient&, WebsocketsEvent, WSInterfaceString){}),
         _sendMode(SendMode_Normal) {
         // Empty
+    }
+
+    WebsocketsClient::WebsocketsClient(const WebsocketsClient& other) : 
+        WebsocketsEndpoint(other),
+        _client(other._client),
+        _connectionOpen(other._client->available()),
+        _messagesCallback(other._messagesCallback),
+        _eventsCallback(other._eventsCallback),
+        _sendMode(other._sendMode) {
+        
+        // delete other's client
+        const_cast<WebsocketsClient&>(other)._client = nullptr;
+        const_cast<WebsocketsClient&>(other)._connectionOpen = false;
+    }
+    
+    WebsocketsClient::WebsocketsClient(const WebsocketsClient&& other) : 
+        WebsocketsEndpoint(other),
+        _client(other._client),
+        _connectionOpen(other._client->available()),
+        _messagesCallback(other._messagesCallback),
+        _eventsCallback(other._eventsCallback),
+        _sendMode(other._sendMode) {
+        
+        // delete other's client
+        const_cast<WebsocketsClient&>(other)._client = nullptr;
+        const_cast<WebsocketsClient&>(other)._connectionOpen = false;
+    }
+    
+    WebsocketsClient& WebsocketsClient::operator=(const WebsocketsClient& other) {
+        // call endpoint's copy operator
+        WebsocketsEndpoint::operator=(other);
+
+        // get callbacks and data from other
+        this->_client = other._client;
+        this->_messagesCallback = other._messagesCallback;
+        this->_eventsCallback = other._eventsCallback;
+        this->_connectionOpen = other._connectionOpen;
+        this->_sendMode = other._sendMode;
+    
+        // delete other's client
+        const_cast<WebsocketsClient&>(other)._client = nullptr;
+        const_cast<WebsocketsClient&>(other)._connectionOpen = false;
+        return *this;
+    }
+
+    WebsocketsClient& WebsocketsClient::operator=(const WebsocketsClient&& other) {
+        // call endpoint's copy operator
+        WebsocketsEndpoint::operator=(other);
+
+        // get callbacks and data from other
+        this->_client = other._client;
+        this->_messagesCallback = other._messagesCallback;
+        this->_eventsCallback = other._eventsCallback;
+        this->_connectionOpen = other._connectionOpen;
+        this->_sendMode = other._sendMode;
+    
+        // delete other's client
+        const_cast<WebsocketsClient&>(other)._client = nullptr;
+        const_cast<WebsocketsClient&>(other)._connectionOpen = false;
+        return *this;
     }
 
     struct HandshakeRequestResult {
@@ -87,58 +147,6 @@ namespace websockets {
         }
 
         return true;
-    }
-
-    WebsocketsClient::WebsocketsClient(const WebsocketsClient& other) : WebsocketsClient(other._client) {
-        // get callbacks from other
-        onMessage(other._messagesCallback);
-        onEvent(other._eventsCallback);
-        this->_connectionOpen = other._connectionOpen;
-        this->_sendMode = other._sendMode;
-
-        // delete other's client
-        const_cast<WebsocketsClient&>(other)._client = nullptr;
-        const_cast<WebsocketsClient&>(other)._connectionOpen = false;
-    }
-    
-    WebsocketsClient::WebsocketsClient(const WebsocketsClient&& other) : WebsocketsClient(other._client) {
-        // get callbacks from other
-        onMessage(other._messagesCallback);
-        onEvent(other._eventsCallback);
-        this->_connectionOpen = other._connectionOpen;
-        this->_sendMode = other._sendMode;
-
-        // delete other's client
-        const_cast<WebsocketsClient&>(other)._client = nullptr;
-        const_cast<WebsocketsClient&>(other)._connectionOpen = false;
-    }
-    
-    WebsocketsClient& WebsocketsClient::operator=(const WebsocketsClient& other) {
-        // get callbacks and data from other
-        this->_client = other._client;
-        onMessage(other._messagesCallback);
-        onEvent(other._eventsCallback);
-        this->_connectionOpen = other._connectionOpen;
-        this->_sendMode = other._sendMode;
-    
-        // delete other's client
-        const_cast<WebsocketsClient&>(other)._client = nullptr;
-        const_cast<WebsocketsClient&>(other)._connectionOpen = false;
-        return *this;
-    }
-
-    WebsocketsClient& WebsocketsClient::operator=(const WebsocketsClient&& other) {
-        // get callbacks and data from other
-        this->_client = other._client;
-        onMessage(other._messagesCallback);
-        onEvent(other._eventsCallback);
-        this->_connectionOpen = other._connectionOpen;
-        this->_sendMode = other._sendMode;
-    
-        // delete other's client
-        const_cast<WebsocketsClient&>(other)._client = nullptr;
-        const_cast<WebsocketsClient&>(other)._connectionOpen = false;
-        return *this;
     }
 
     bool WebsocketsClient::connect(WSInterfaceString _url) {
