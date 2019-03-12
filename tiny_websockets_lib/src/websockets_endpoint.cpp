@@ -305,7 +305,7 @@ namespace internals {
             pong(internals::fromInterfaceString(msg.data()));
         } else if(msg.isClose()) {
             // is there a reason field
-            if(msg.data().size() >= 2) {
+            if(internals::fromInterfaceString(msg.data()).size() >= 2) {
                 uint16_t reason = *(reinterpret_cast<const uint16_t*>(msg.data().c_str()));
                 reason = reason >> 8 | reason << 8;
                 this->_closeReason = GetCloseReason(reason);
