@@ -139,11 +139,9 @@ namespace internals {
             extendedPayload = tmp;
         }
         else if (header.payload == 127) {
-            // TODO: read next 64 bits as payload length and handle such very long messages
             uint64_t tmp = 0;
             socket.read(reinterpret_cast<uint8_t*>(&tmp), 8);
             extendedPayload = swapEndianess(tmp);
-            //extendedPayload = swapEndianess(tmp);
         }
 
         return extendedPayload;
