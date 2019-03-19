@@ -41,8 +41,6 @@ namespace websockets {
 namespace internals {
 
     uint32_t swapEndianess(uint32_t num) {
-        uint32_t result = 0;
-
         uint32_t highest = (num >> 24);
         uint32_t second = (num << 8) >> 24;
         uint32_t third = (num << 16) >> 24;
@@ -52,8 +50,6 @@ namespace internals {
     }
 
     uint64_t swapEndianess(uint64_t num) {
-        uint64_t result = 0;
-
         uint32_t upper = (num >> 32);
         uint32_t lower = (num << 32) >> 32;
     
