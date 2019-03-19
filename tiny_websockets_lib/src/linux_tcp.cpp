@@ -133,8 +133,7 @@ namespace websockets { namespace network {
 namespace websockets { namespace network {
 
   int linuxTcpServerInit(const size_t backlog, int port) {
-    socklen_t clilen;
-    struct sockaddr_in serv_addr, cli_addr;
+    struct sockaddr_in serv_addr;
     
     // socket init
     auto sockfd = socket(AF_INET, SOCK_STREAM, 0);
