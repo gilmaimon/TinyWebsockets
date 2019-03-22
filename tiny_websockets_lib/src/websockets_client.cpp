@@ -166,6 +166,10 @@ namespace websockets {
             defaultPort = 443;
             protocol = "wss";
             url = url.substr(6); //strlen("wss://") == 6
+        } else if(doestStartsWith(url, "https://")) {
+            defaultPort = 443;
+            protocol = "https";
+            url = url.substr(8); //strlen("https://") == 6
         } else {
             return false;
             // Not supported
