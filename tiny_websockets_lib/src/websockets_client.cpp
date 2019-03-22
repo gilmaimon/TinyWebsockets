@@ -152,12 +152,20 @@ namespace websockets {
     bool WebsocketsClient::connect(WSInterfaceString _url) {
         WSString url = internals::fromInterfaceString(_url);
         WSString protocol = "";
+        int defaultPort = 0;
+
         if(doestStartsWith(url, "http://")) {
+            defaultPort = 80;
             protocol = "http";
             url = url.substr(7); //strlen("http://") == 7
         } else if(doestStartsWith(url, "ws://")) {
+            defaultPort = 80;
             protocol = "ws";
             url = url.substr(5); //strlen("ws://") == 5
+        } else if(doestStartsWith(url, "wss://")) {
+            defaultPort = 443;
+            protocol = "wss";
+            url = url.substr(6); //strlen("wss://") == 6
         } else {
             return false;
             // Not supported
@@ -172,7 +180,7 @@ namespace websockets {
         }
 
         auto portIdx = host.find_first_of(':');
-        int port = 80;
+        int port = defaultPort;
         if(static_cast<int>(portIdx) != -1) {
             auto onlyHost = host.substr(0, portIdx);
             ++portIdx;

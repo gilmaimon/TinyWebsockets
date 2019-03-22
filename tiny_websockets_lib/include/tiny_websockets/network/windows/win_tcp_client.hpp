@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <iostream>
+
 namespace websockets { namespace network {
     class WinTcpClient : public TcpClient {
     public:
@@ -29,6 +31,9 @@ namespace websockets { namespace network {
         void read(uint8_t* buffer, uint32_t len) override;
         void close() override;
         virtual ~WinTcpClient();
+
+    protected:
+        SOCKET getSocket() const { return socket; }
 
     private:
         SOCKET socket;
