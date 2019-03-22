@@ -10,15 +10,24 @@
 
 namespace websockets { namespace network { namespace internals {
   SSL_CTX *InitSSL_CTX(void) {
-      const SSL_METHOD *method = TLS_client_method(); /* Create new client-method instance */
-      SSL_CTX *ctx = SSL_CTX_new(method);
+    #if OPENSSL_VERSION_NUMBER < 0x10100000L
+    SSL_library_init();
+    #else
+    OPENSSL_init_ssl(0, NULL);
+    #endif
 
-      if (ctx == nullptr)
-      {
-          ERR_print_errors_fp(stderr);
-          exit(EXIT_FAILURE);
-      }
-      return ctx;
+    ERR_load_crypto_strings();
+    SSL_load_error_strings();
+
+    const SSL_METHOD *method = DTLS_client_method(); /* Create new client-method instance */
+    SSL_CTX *ctx = SSL_CTX_new(method);
+
+    if (ctx == nullptr)
+    {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+    return ctx;
   }
 }}}
 
@@ -26,7 +35,7 @@ namespace websockets { namespace network {
     template <class TcpClientImpl>
     class OpenSSLSecureTcpClient : public TcpClientImpl {
     public:
-        OpenSSLSecureTcpClient(SOCKET s = INVALID_SOCKET) : TcpClientImpl(s) {
+        OpenSSLSecureTcpClient(int s = -1) : TcpClientImpl(s) {
         }
 
         bool connect(WSString host, int port) override {
