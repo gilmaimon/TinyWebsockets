@@ -45,24 +45,19 @@ namespace websockets { namespace network {
       bool connect(WSString host, int port) override {
         ctx = internals::InitSSL_CTX();
         ssl = SSL_new(ctx);
-        if (ssl == nullptr)
-        {
-            fprintf(stdout, "SSL_new() failed\n");
-            return false;
+        if (ssl == nullptr) {
+          //fprintf(stdout, "SSL_new() failed\n");
+          return false;
         }
         bool didConnect = TcpClientImpl::connect(host, port);
-        
         if(didConnect == false) return false;
 
         SSL_set_fd(ssl, this->getSocket());
 
         const int status = SSL_connect(ssl);
-        if (status != 1)
-        {
-            SSL_get_error(ssl, status);
-            ERR_print_errors_fp(stderr); //High probability this doesn't do anything
-            fprintf(stdout, "SSL_connect failed with SSL_get_error code %d\n", status);
-            return false;
+        if (status != 1) {
+          //fprintf(stdout, "SSL_connect failed with SSL_get_error code %d\n", status);
+          return false;
         }
 
         return true;
