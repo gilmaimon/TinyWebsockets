@@ -1,5 +1,7 @@
 #include <tiny_websockets/network/openssl_secure_tcp_client.hpp>
 
+#ifndef _WS_CONFIG_NO_SSL
+
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
@@ -32,3 +34,5 @@ namespace websockets { namespace network { namespace internals {
     return ctx;
   }
 }}}
+
+#endif //_WS_CONFIG_NO_SSL

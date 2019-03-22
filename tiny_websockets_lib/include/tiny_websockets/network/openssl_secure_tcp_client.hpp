@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef _WS_CONFIG_NO_SSL
+
 #include <tiny_websockets/internals/ws_common.hpp>
 #include <tiny_websockets/network/tcp_client.hpp>
 
@@ -79,3 +81,5 @@ namespace websockets { namespace network {
       SSL *ssl;
   };
 }} // websockets::network
+
+#endif //_WS_CONFIG_NO_SSL

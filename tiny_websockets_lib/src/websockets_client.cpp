@@ -4,8 +4,10 @@
 #include <tiny_websockets/client.hpp>
 #include <tiny_websockets/internals/wscrypto/crypto.hpp>
 
+#ifndef _WS_CONFIG_NO_SSL
 // OpenSSL Dependent
 #include <tiny_websockets/network/openssl_secure_tcp_client.hpp>
+#endif //_WS_CONFIG_NO_SSL
 
 namespace websockets {
     WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
@@ -153,9 +155,11 @@ namespace websockets {
     }
 
     void WebsocketsClient::upgradeToSecuredConnection() {
+    #ifndef _WS_CONFIG_NO_SSL
         delete this->_client;
         this->_client = new network::OpenSSLSecureTcpClient<WSDefaultTcpClient>;
         this->_endpoint = {this->_client};
+    #endif //_WS_CONFIG_NO_SSL
     }
 
     bool WebsocketsClient::connect(WSInterfaceString _url) {
@@ -171,7 +175,10 @@ namespace websockets {
             defaultPort = 80;
             protocol = "ws";
             url = url.substr(5); //strlen("ws://") == 5
-        } else if(doestStartsWith(url, "wss://")) {
+        }
+
+    #ifndef _WS_CONFIG_NO_SSL
+        else if(doestStartsWith(url, "wss://")) {
             defaultPort = 443;
             protocol = "wss";
             url = url.substr(6); //strlen("wss://") == 6
@@ -183,7 +190,10 @@ namespace websockets {
             url = url.substr(8); //strlen("https://") == 8
             
             upgradeToSecuredConnection();
-        } else {
+        } 
+    #endif
+
+        else {
             return false;
             // Not supported
         }
