@@ -19,10 +19,18 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra -pedantic -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wundef -fdiagnostics-show-option")
 endif()
 
+# OpenSSL
+find_package(OpenSSL REQUIRED)
+message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+include_directories(${OPENSSL_INCLUDE_DIR})
+list(APPEND LIB_LIST ${OPENSSL_LIBRARIES})
+
 file(GLOB TEST_SOURCES "demo_*.cpp")
 foreach(file ${TEST_SOURCES})
   get_filename_component(_F_NAME ${file} NAME_WE)
   add_executable(${_F_NAME} ${file})
+  target_link_libraries(${_F_NAME} ${OPENSSL_LIBRARIES})
   target_link_libraries (${_F_NAME} ${CMAKE_THREAD_LIBS_INIT})
   target_link_libraries(${_F_NAME} tiny_websockets_lib)
   if(WIN32)
