@@ -1,9 +1,7 @@
 #pragma once
 
-#ifdef _WIN32 
-
 #include <tiny_websockets/internals/ws_common.hpp>
-#include <tiny_websockets/network/windows/win_tcp_client.hpp>
+#include <tiny_websockets/network/tcp_client.hpp>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -25,9 +23,10 @@ namespace websockets { namespace network { namespace internals {
 }}}
 
 namespace websockets { namespace network {
-    class WinSecureTcpClient : public WinTcpClient {
+    template <class TcpClientImpl>
+    class OpenSSLSecureTcpClient : public TcpClientImpl {
     public:
-        WinSecureTcpClient(SOCKET s = INVALID_SOCKET) : WinTcpClient(s) {
+        OpenSSLSecureTcpClient(SOCKET s = INVALID_SOCKET) : TcpClientImpl(s) {
         }
 
         bool connect(WSString host, int port) override {
@@ -38,7 +37,7 @@ namespace websockets { namespace network {
               fprintf(stdout, "SSL_new() failed\n");
               return false;
           }
-          bool didConnect = WinTcpClient::connect(host, port);
+          bool didConnect = TcpClientImpl::connect(host, port);
           
           if(didConnect == false) return false;
 
@@ -63,12 +62,12 @@ namespace websockets { namespace network {
           uint8_t byte = '0';
           WSString line;
           read(&byte, 1);
-          while (available()) {
+          while (this->available()) {
             line += static_cast<char>(byte);
             if (byte == '\n') break;
             read(&byte, 1);
           }
-          if(!available()) close();
+          if(!this->available()) close();
           return line;
         }
         void send(WSString data) {
@@ -82,11 +81,11 @@ namespace websockets { namespace network {
         
         void close() override {
           SSL_free(ssl);
-          WinTcpClient::close();
+          TcpClientImpl::close();
           SSL_CTX_free(ctx);
         }
 
-        virtual ~WinSecureTcpClient() {
+        virtual ~OpenSSLSecureTcpClient() {
           close();
         }
     private:
@@ -95,6 +94,3 @@ namespace websockets { namespace network {
         SSL *ssl;
     };
 }} // websockets::network
-
-
-#endif // #ifdef _WIN32 

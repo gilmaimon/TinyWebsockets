@@ -33,8 +33,8 @@ namespace websockets { namespace network {
         virtual ~WinTcpClient();
 
     protected:
-        SOCKET getSocket() const { return socket; }
-
+        int getSocket() const override;
+    
     private:
         SOCKET socket;
     };
