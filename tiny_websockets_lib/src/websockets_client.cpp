@@ -4,11 +4,6 @@
 #include <tiny_websockets/client.hpp>
 #include <tiny_websockets/internals/wscrypto/crypto.hpp>
 
-#ifndef _WS_CONFIG_NO_SSL
-// OpenSSL Dependent
-#include <tiny_websockets/network/openssl_secure_tcp_client.hpp>
-#endif //_WS_CONFIG_NO_SSL
-
 namespace websockets {
     WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
         _client(client),
@@ -157,7 +152,7 @@ namespace websockets {
     void WebsocketsClient::upgradeToSecuredConnection() {
     #ifndef _WS_CONFIG_NO_SSL
         delete this->_client;
-        this->_client = new network::OpenSSLSecureTcpClient<WSDefaultTcpClient>;
+        this->_client = new WSDefaultSecuredTcpClient;
         this->_endpoint = {this->_client};
     #endif //_WS_CONFIG_NO_SSL
     }
