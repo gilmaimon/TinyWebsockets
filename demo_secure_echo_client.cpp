@@ -18,15 +18,12 @@
 #include <tiny_websockets/client.hpp>
 #include <tiny_websockets/server.hpp>
 
-#include <tiny_websockets/network/openssl_secure_tcp_client.hpp>
 #include <iostream>
 
 using namespace websockets;
 
 int main() {
-  //WebsocketsClient client(new network::WinSecureTcpClient);
-  //WebsocketsClient client;
-  WebsocketsClient client(new network::OpenSSLSecureTcpClient<WSDefaultTcpClient>);
+  WebsocketsClient client;
   client.connect("wss://echo.websocket.org/");
 
   client.onMessage([&](WebsocketsClient&, WebsocketsMessage message){

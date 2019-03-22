@@ -2,13 +2,12 @@
 #include <catch.hpp>
 
 #include <tiny_websockets/client.hpp>
-#include <tiny_websockets/network/openssl_secure_tcp_client.hpp>
 
 using namespace websockets;
 
 TEST_CASE( "Testing SSL Client (with connect string https://)" ) {
   std::cout << "Test 1" << std::endl;
-  WebsocketsClient client(new network::OpenSSLSecureTcpClient<WSDefaultTcpClient>);
+  WebsocketsClient client;
   REQUIRE( client.connect("https://echo.websocket.org/") == true );
   
   REQUIRE( client.send("Hello Server") == true);
@@ -20,7 +19,7 @@ TEST_CASE( "Testing SSL Client (with connect string https://)" ) {
 
 TEST_CASE( "Testing SSL Client (with connect string wss://)" ) {
   std::cout << "Test 2" << std::endl;
-  WebsocketsClient client(new network::OpenSSLSecureTcpClient<WSDefaultTcpClient>);
+  WebsocketsClient client;
   REQUIRE( client.connect("wss://echo.websocket.org/") == true );
   
   REQUIRE( client.send("Hello Server") == true);
