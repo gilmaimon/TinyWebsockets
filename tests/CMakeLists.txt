@@ -8,6 +8,13 @@ target_include_directories(Catch INTERFACE catch2/)
 
 find_package (Threads)
 
+# OpenSSL
+find_package(OpenSSL REQUIRED)
+message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+include_directories(${OPENSSL_INCLUDE_DIR})
+list(APPEND LIB_LIST ${OPENSSL_LIBRARIES})
+
 file(GLOB TEST_SOURCES "src/*.cpp")
 foreach(file ${TEST_SOURCES})
   get_filename_component(_F_NAME ${file} NAME_WE)

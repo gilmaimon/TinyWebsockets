@@ -17,11 +17,11 @@ namespace websockets { namespace network { namespace internals {
     #endif
 
     #if defined(LWS_HAVE_TLS_CLIENT_METHOD)
-	  const SSL_METHOD *method = TLS_client_method();
+	  SSL_METHOD *method = const_cast<SSL_METHOD*>(TLS_client_method());
     #elif defined(LWS_HAVE_TLSV1_2_CLIENT_METHOD)
-	  const SSL_METHOD *method = TLSv1_2_client_method();
+	  SSL_METHOD *method = const_cast<SSL_METHOD*>(TLSv1_2_client_method());
     #else
-	  const SSL_METHOD *method = SSLv23_client_method();
+	  SSL_METHOD *method = const_cast<SSL_METHOD*>(SSLv23_client_method());
     #endif
 
     SSL_CTX *ctx = SSL_CTX_new(method);
