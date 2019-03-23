@@ -5,7 +5,11 @@
 #include <tiny_websockets/internals/wscrypto/crypto.hpp>
 
 namespace websockets {
-    WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
+    WebsocketsClient::WebsocketsClient() : WebsocketsClient(std::make_shared<WSDefaultTcpClient>()) {
+        // Empty
+    }
+
+    WebsocketsClient::WebsocketsClient(std::shared_ptr<network::TcpClient> client) : 
         _client(client),
         _endpoint(client), 
         _connectionOpen(client->available()),
@@ -151,8 +155,7 @@ namespace websockets {
 
     void WebsocketsClient::upgradeToSecuredConnection() {
     #ifndef _WS_CONFIG_NO_SSL
-        delete this->_client;
-        this->_client = new WSDefaultSecuredTcpClient;
+        this->_client = std::make_shared<WSDefaultSecuredTcpClient>();
         this->_endpoint = {this->_client};
     #endif //_WS_CONFIG_NO_SSL
     }
@@ -460,6 +463,5 @@ namespace websockets {
         if(available()) {
             this->close(CloseReason_GoingAway);
         }
-        delete this->_client;
     }
 }

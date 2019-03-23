@@ -5,6 +5,7 @@
 #include <tiny_websockets/internals/data_frame.hpp>
 #include <tiny_websockets/internals/websockets_endpoint.hpp>
 #include <tiny_websockets/message.hpp>
+#include <memory>
 #include <functional>
 
 namespace websockets {
@@ -23,7 +24,8 @@ namespace websockets {
 
   class WebsocketsClient {
   public:
-    WebsocketsClient(network::TcpClient* client = new WSDefaultTcpClient);
+    WebsocketsClient();
+    WebsocketsClient(std::shared_ptr<network::TcpClient> client);
     
     WebsocketsClient(const WebsocketsClient& other);
     WebsocketsClient(const WebsocketsClient&& other);
@@ -68,7 +70,7 @@ namespace websockets {
     virtual ~WebsocketsClient();
 
   private:
-    network::TcpClient* _client;
+    std::shared_ptr<network::TcpClient> _client;
     internals::WebsocketsEndpoint _endpoint;
     bool _connectionOpen;
     MessageCallback _messagesCallback;

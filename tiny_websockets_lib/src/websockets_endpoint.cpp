@@ -62,7 +62,7 @@ namespace internals {
         return upperLong | (lowerLong << 32);
     }
 
-    WebsocketsEndpoint::WebsocketsEndpoint(network::TcpClient* client, FragmentsPolicy fragmentsPolicy) : 
+    WebsocketsEndpoint::WebsocketsEndpoint(std::shared_ptr<network::TcpClient> client, FragmentsPolicy fragmentsPolicy) : 
         _client(client),
         _fragmentsPolicy(fragmentsPolicy),
         _recvMode(RecvMode_Normal),

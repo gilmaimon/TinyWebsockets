@@ -4,6 +4,7 @@
 #include <tiny_websockets/network/tcp_client.hpp>
 #include <tiny_websockets/internals/data_frame.hpp>
 #include <tiny_websockets/message.hpp>
+#include <memory>
 
 namespace websockets { 
     enum FragmentsPolicy {
@@ -31,7 +32,7 @@ namespace websockets {
     
     class WebsocketsEndpoint {
     public:
-        WebsocketsEndpoint(network::TcpClient* socket, FragmentsPolicy fragmentsPolicy = FragmentsPolicy_Aggregate);
+        WebsocketsEndpoint(std::shared_ptr<network::TcpClient> socket, FragmentsPolicy fragmentsPolicy = FragmentsPolicy_Aggregate);
 
         WebsocketsEndpoint(const WebsocketsEndpoint& other);
         WebsocketsEndpoint(const WebsocketsEndpoint&& other);
@@ -55,7 +56,7 @@ namespace websockets {
 
         virtual ~WebsocketsEndpoint();
     private:
-        network::TcpClient* _client;
+        std::shared_ptr<network::TcpClient> _client;
         FragmentsPolicy _fragmentsPolicy;
         enum RecvMode {
             RecvMode_Normal,
