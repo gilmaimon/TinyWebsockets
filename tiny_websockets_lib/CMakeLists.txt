@@ -23,8 +23,16 @@ file(GLOB_RECURSE tinyws_HEADERS
     "include/*.hpp"
 )
 
+# OpenSSL
+find_package(OpenSSL REQUIRED)
+message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+include_directories(${OPENSSL_INCLUDE_DIR})
+list(APPEND LIB_LIST ${OPENSSL_LIBRARIES})
+
 include_directories(include/tiny_websockets)
 add_library(tiny_websockets_lib STATIC ${tinyws_HEADERS} ${tinyws_SOURCES})
+target_link_libraries(tiny_websockets_lib ${OPENSSL_LIBRARIES})
 set_target_properties(tiny_websockets_lib PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(tiny_websockets_lib PUBLIC include)
 

@@ -21,7 +21,7 @@ namespace websockets {
     typedef std::function<void(WebsocketsClient&, WebsocketsEvent, WSInterfaceString)> EventCallback;
     typedef std::function<void(WebsocketsEvent, WSInterfaceString)> PartialEventCallback;
 
-  class WebsocketsClient : private internals::WebsocketsEndpoint {
+  class WebsocketsClient {
   public:
     WebsocketsClient(network::TcpClient* client = new WSDefaultTcpClient);
     
@@ -69,6 +69,7 @@ namespace websockets {
 
   private:
     network::TcpClient* _client;
+    internals::WebsocketsEndpoint _endpoint;
     bool _connectionOpen;
     MessageCallback _messagesCallback;
     EventCallback _eventsCallback;
@@ -80,5 +81,7 @@ namespace websockets {
     void _handlePing(WebsocketsMessage);
     void _handlePong(WebsocketsMessage);
     void _handleClose(WebsocketsMessage);
+
+    void upgradeToSecuredConnection();
   };
 }

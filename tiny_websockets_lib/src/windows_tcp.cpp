@@ -163,6 +163,10 @@ namespace websockets { namespace network {
       //WSACleanup();
     }
   }
+  
+  int WinTcpClient::getSocket() const { 
+    return socket; 
+  }
 
   WinTcpClient::~WinTcpClient() {
     close();
@@ -285,6 +289,9 @@ namespace websockets { namespace network {
     // WSACleanup();
   }
 
+  int WinTcpServer::getSocket() const{ 
+    return socket; 
+  }
 
   WinTcpServer::~WinTcpServer() {
     this->close();

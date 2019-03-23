@@ -18,6 +18,10 @@ namespace websockets { namespace network {
         bool available() override;
         void close() override;
         virtual ~LinuxTcpServer();
+
+    protected:
+        virtual int getSocket() const override { return _socket; }
+    
     private:
         int _socket;
         size_t _num_backlog;

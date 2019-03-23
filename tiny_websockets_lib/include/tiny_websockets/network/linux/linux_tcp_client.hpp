@@ -22,6 +22,9 @@ namespace websockets { namespace network {
         void close() override;
         virtual ~LinuxTcpClient();
 
+    protected:
+        virtual int getSocket() const override { return _socket; }
+
     private:
         int _socket;
     };

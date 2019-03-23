@@ -6,8 +6,8 @@
 
 namespace websockets {
     WebsocketsClient::WebsocketsClient(network::TcpClient* client) : 
-        WebsocketsEndpoint(client), 
         _client(client),
+        _endpoint(client), 
         _connectionOpen(client->available()),
         _messagesCallback([](WebsocketsClient&, WebsocketsMessage){}),
         _eventsCallback([](WebsocketsClient&, WebsocketsEvent, WSInterfaceString){}),
@@ -16,8 +16,8 @@ namespace websockets {
     }
 
     WebsocketsClient::WebsocketsClient(const WebsocketsClient& other) : 
-        WebsocketsEndpoint(other),
         _client(other._client),
+        _endpoint(other._endpoint),
         _connectionOpen(other._client->available()),
         _messagesCallback(other._messagesCallback),
         _eventsCallback(other._eventsCallback),
@@ -29,8 +29,8 @@ namespace websockets {
     }
     
     WebsocketsClient::WebsocketsClient(const WebsocketsClient&& other) : 
-        WebsocketsEndpoint(other),
         _client(other._client),
+        _endpoint(other._endpoint),
         _connectionOpen(other._client->available()),
         _messagesCallback(other._messagesCallback),
         _eventsCallback(other._eventsCallback),
@@ -43,7 +43,7 @@ namespace websockets {
     
     WebsocketsClient& WebsocketsClient::operator=(const WebsocketsClient& other) {
         // call endpoint's copy operator
-        WebsocketsEndpoint::operator=(other);
+        _endpoint = other._endpoint;
 
         // get callbacks and data from other
         this->_client = other._client;
@@ -60,7 +60,7 @@ namespace websockets {
 
     WebsocketsClient& WebsocketsClient::operator=(const WebsocketsClient&& other) {
         // call endpoint's copy operator
-        WebsocketsEndpoint::operator=(other);
+        _endpoint = other._endpoint;
 
         // get callbacks and data from other
         this->_client = other._client;
@@ -149,16 +149,46 @@ namespace websockets {
         return true;
     }
 
+    void WebsocketsClient::upgradeToSecuredConnection() {
+    #ifndef _WS_CONFIG_NO_SSL
+        delete this->_client;
+        this->_client = new WSDefaultSecuredTcpClient;
+        this->_endpoint = {this->_client};
+    #endif //_WS_CONFIG_NO_SSL
+    }
+
     bool WebsocketsClient::connect(WSInterfaceString _url) {
         WSString url = internals::fromInterfaceString(_url);
         WSString protocol = "";
+        int defaultPort = 0;
+
         if(doestStartsWith(url, "http://")) {
+            defaultPort = 80;
             protocol = "http";
             url = url.substr(7); //strlen("http://") == 7
         } else if(doestStartsWith(url, "ws://")) {
+            defaultPort = 80;
             protocol = "ws";
             url = url.substr(5); //strlen("ws://") == 5
-        } else {
+        }
+
+    #ifndef _WS_CONFIG_NO_SSL
+        else if(doestStartsWith(url, "wss://")) {
+            defaultPort = 443;
+            protocol = "wss";
+            url = url.substr(6); //strlen("wss://") == 6
+
+            upgradeToSecuredConnection();
+        } else if(doestStartsWith(url, "https://")) {
+            defaultPort = 443;
+            protocol = "https";
+            url = url.substr(8); //strlen("https://") == 8
+            
+            upgradeToSecuredConnection();
+        } 
+    #endif
+
+        else {
             return false;
             // Not supported
         }
@@ -172,7 +202,7 @@ namespace websockets {
         }
 
         auto portIdx = host.find_first_of(':');
-        int port = 80;
+        int port = defaultPort;
         if(static_cast<int>(portIdx) != -1) {
             auto onlyHost = host.substr(0, portIdx);
             ++portIdx;
@@ -250,8 +280,8 @@ namespace websockets {
 
     bool WebsocketsClient::poll() {
         bool messageReceived = false;
-        while(available() && WebsocketsEndpoint::poll()) {
-            auto msg = WebsocketsEndpoint::recv();
+        while(available() && _endpoint.poll()) {
+            auto msg = _endpoint.recv();
             if(msg.isEmpty()) {
                 continue;
             }
@@ -277,9 +307,9 @@ namespace websockets {
     WebsocketsMessage WebsocketsClient::readBlocking() {
         while(available()) {
 #ifdef PLATFORM_DOES_NOT_SUPPORT_BLOCKING_READ
-            while(available() && WebsocketsEndpoint::poll() == false) continue;
+            while(available() && _endpoint.poll() == false) continue;
 #endif
-            auto msg = WebsocketsEndpoint::recv();
+            auto msg = _endpoint.recv();
             if(!msg.isEmpty()) return msg;
         }
         return {};
@@ -295,7 +325,7 @@ namespace websockets {
             // if in normal mode
             if(this->_sendMode == SendMode_Normal) {
                 // send a normal message
-                return WebsocketsEndpoint::send(
+                return _endpoint.send(
                     data,
                     len,
                     internals::ContentType::Text
@@ -304,7 +334,7 @@ namespace websockets {
             // if in streaming mode
             else if(this->_sendMode == SendMode_Streaming) {
                 // send a continue frame
-                return WebsocketsEndpoint::send(
+                return _endpoint.send(
                     data, 
                     len, 
                     internals::ContentType::Continuation,
@@ -325,7 +355,7 @@ namespace websockets {
             // if in normal mode
             if(this->_sendMode == SendMode_Normal) {
                 // send a normal message
-                return WebsocketsEndpoint::send(
+                return _endpoint.send(
                     data,
                     len,
                     internals::ContentType::Binary
@@ -334,7 +364,7 @@ namespace websockets {
             // if in streaming mode
             else if(this->_sendMode == SendMode_Streaming) {
                 // send a continue frame
-                return WebsocketsEndpoint::send(
+                return _endpoint.send(
                     data, 
                     len, 
                     internals::ContentType::Continuation,
@@ -348,7 +378,7 @@ namespace websockets {
     bool WebsocketsClient::stream(WSInterfaceString data) {
         if(available() && this->_sendMode == SendMode_Normal) {
             this->_sendMode = SendMode_Streaming;
-            return WebsocketsEndpoint::send(
+            return _endpoint.send(
                 internals::fromInterfaceString(data), 
                 internals::ContentType::Text, 
                 false
@@ -361,7 +391,7 @@ namespace websockets {
     bool WebsocketsClient::streamBinary(WSInterfaceString data) {
         if(available() && this->_sendMode == SendMode_Normal) {
             this->_sendMode = SendMode_Streaming;
-            return WebsocketsEndpoint::send(
+            return _endpoint.send(
                 internals::fromInterfaceString(data), 
                 internals::ContentType::Binary, 
                 false
@@ -373,7 +403,7 @@ namespace websockets {
     bool WebsocketsClient::end(WSInterfaceString data) {
         if(available() && this->_sendMode == SendMode_Streaming) {
             this->_sendMode = SendMode_Normal;
-            return WebsocketsEndpoint::send(
+            return _endpoint.send(
                 internals::fromInterfaceString(data), 
                 internals::ContentType::Continuation, 
                 true
@@ -383,35 +413,35 @@ namespace websockets {
     }
 
     void WebsocketsClient::setFragmentsPolicy(FragmentsPolicy newPolicy) {
-        WebsocketsEndpoint::setFragmentsPolicy(newPolicy);
+        _endpoint.setFragmentsPolicy(newPolicy);
     }
 
     bool WebsocketsClient::available(bool activeTest) {
         this->_connectionOpen &= this->_client && this->_client->available();
         if(this->_connectionOpen && activeTest)  {
-            WebsocketsEndpoint::ping();
+            _endpoint.ping();
         }
         return _connectionOpen;
     }
 
     bool WebsocketsClient::ping(WSInterfaceString data) {
-        return WebsocketsEndpoint::ping(internals::fromInterfaceString(data));
+        return _endpoint.ping(internals::fromInterfaceString(data));
     }
 
     bool WebsocketsClient::pong(WSInterfaceString data) {
-        return WebsocketsEndpoint::pong(internals::fromInterfaceString(data));
+        return _endpoint.pong(internals::fromInterfaceString(data));
     }
 
     void WebsocketsClient::close(CloseReason reason) {
         if(available()) {
-            WebsocketsEndpoint::close(reason);
+            _endpoint.close(reason);
             this->_connectionOpen = false;
             _handleClose({});
         }
     }
 
     CloseReason WebsocketsClient::getCloseReason() {
-        return WebsocketsEndpoint::getCloseReason();
+        return _endpoint.getCloseReason();
     }
 
     void WebsocketsClient::_handlePing(WebsocketsMessage message) {
