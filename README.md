@@ -11,6 +11,7 @@ Key Features:
 * **Cross Platform**, support: **Windows**, **Linux**, and **Arduino** (ESP8266 and ESP32, see [ArduinoWebsockets](https://github.com/gilmaimon/ArduinoWebsockets))
 * Websockets **Client** and **Server** APIs.
 * Fully supports **Fragmented Messages** and streaming
+* Supports Client-Side Websokcets over **SSL/TLS**
 
 ## Table Of Contents
 
@@ -212,7 +213,7 @@ make test # check for CTest output after changes
 
 ### Missing Features
 
-* Support for SSL/WSS - currently the library has no support for secure connections.
+* Support for SSL/WSS - currently the library has only support client side and does not support creating ssl servers.
 
 ## License
 
