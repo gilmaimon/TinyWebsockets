@@ -39,7 +39,8 @@ namespace websockets { namespace network {
         return true;
       }
       void send(uint8_t* data, uint32_t len) override {
-        SSL_write(ssl, data, len);
+        auto res = SSL_write(ssl, data, len);
+        if(res <= 0) this->close();
       }
       WSString readLine() override {
         uint8_t byte = '0';
@@ -57,7 +58,8 @@ namespace websockets { namespace network {
         this->send(reinterpret_cast<uint8_t*>(const_cast<char*>(data.c_str())), data.size());
       }
       void read(uint8_t* buffer, uint32_t len) override {
-        SSL_read(ssl, buffer, len);
+        auto res = SSL_read(ssl, buffer, len);
+        if(res <= 0) this->close();
       }
       
       void close() override {
@@ -76,7 +78,6 @@ namespace websockets { namespace network {
         close();
       }
   private:
-      //SOCKET _socket;
       SSL_CTX *ctx;
       SSL *ssl;
   };
