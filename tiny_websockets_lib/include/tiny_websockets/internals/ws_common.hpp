@@ -3,6 +3,12 @@
 #include <tiny_websockets/ws_config_defs.hpp>
 #include <string>
 
+// Versioning
+#define TINY_WS_VERSION_STRING "0.1.0"
+#define TINY_WS_VERSION_MAJOR 0
+#define TINY_WS_VERSION_MINOR 1
+#define TINY_WS_VERSION_PATCH 0
+
 namespace websockets {
     typedef std::string WSString;
     typedef std::string WSInterfaceString;
