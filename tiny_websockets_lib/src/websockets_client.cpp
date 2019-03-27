@@ -318,12 +318,21 @@ namespace websockets {
         return {};
     }
 
-    bool WebsocketsClient::send(WSInterfaceString data) {
+    bool WebsocketsClient::send(const WSInterfaceString& data) {
         auto str = internals::fromInterfaceString(data);
         return this->send(str.c_str(), str.size());
     }
 
-    bool WebsocketsClient::send(const char* data, size_t len) {
+    bool WebsocketsClient::send(const WSInterfaceString&& data) {
+        auto str = internals::fromInterfaceString(data);
+        return this->send(str.c_str(), str.size());
+    }
+    
+    bool WebsocketsClient::send(const char* data) {
+        return this->send(data, strlen(data));
+    }
+
+    bool WebsocketsClient::send(const char* data, const size_t len) {
         if(available()) {
             // if in normal mode
             if(this->_sendMode == SendMode_Normal) {
@@ -353,7 +362,7 @@ namespace websockets {
         return this->sendBinary(str.c_str(), str.size());
     }
 
-    bool WebsocketsClient::sendBinary(const char* data, size_t len) {
+    bool WebsocketsClient::sendBinary(const char* data, const size_t len) {
         if(available()) {
             // if in normal mode
             if(this->_sendMode == SendMode_Normal) {
@@ -378,7 +387,7 @@ namespace websockets {
         return false;
     }
 
-    bool WebsocketsClient::stream(WSInterfaceString data) {
+    bool WebsocketsClient::stream(const WSInterfaceString data) {
         if(available() && this->_sendMode == SendMode_Normal) {
             this->_sendMode = SendMode_Streaming;
             return _endpoint.send(
@@ -391,7 +400,7 @@ namespace websockets {
     }
 
     
-    bool WebsocketsClient::streamBinary(WSInterfaceString data) {
+    bool WebsocketsClient::streamBinary(const WSInterfaceString data) {
         if(available() && this->_sendMode == SendMode_Normal) {
             this->_sendMode = SendMode_Streaming;
             return _endpoint.send(
@@ -403,7 +412,7 @@ namespace websockets {
         return false;
     }
 
-    bool WebsocketsClient::end(WSInterfaceString data) {
+    bool WebsocketsClient::end(const WSInterfaceString data) {
         if(available() && this->_sendMode == SendMode_Streaming) {
             this->_sendMode = SendMode_Normal;
             return _endpoint.send(
@@ -415,27 +424,27 @@ namespace websockets {
         return false;
     }
 
-    void WebsocketsClient::setFragmentsPolicy(FragmentsPolicy newPolicy) {
+    void WebsocketsClient::setFragmentsPolicy(const FragmentsPolicy newPolicy) {
         _endpoint.setFragmentsPolicy(newPolicy);
     }
 
-    bool WebsocketsClient::available(bool activeTest) {
+    bool WebsocketsClient::available(const bool activeTest) {
         this->_connectionOpen &= this->_client && this->_client->available();
         if(this->_connectionOpen && activeTest)  {
-            _endpoint.ping();
+            _endpoint.ping("");
         }
         return _connectionOpen;
     }
 
-    bool WebsocketsClient::ping(WSInterfaceString data) {
+    bool WebsocketsClient::ping(const WSInterfaceString data) {
         return _endpoint.ping(internals::fromInterfaceString(data));
     }
 
-    bool WebsocketsClient::pong(WSInterfaceString data) {
+    bool WebsocketsClient::pong(const WSInterfaceString data) {
         return _endpoint.pong(internals::fromInterfaceString(data));
     }
 
-    void WebsocketsClient::close(CloseReason reason) {
+    void WebsocketsClient::close(const CloseReason reason) {
         if(available()) {
             _endpoint.close(reason);
             this->_connectionOpen = false;
@@ -443,19 +452,19 @@ namespace websockets {
         }
     }
 
-    CloseReason WebsocketsClient::getCloseReason() {
+    CloseReason WebsocketsClient::getCloseReason() const {
         return _endpoint.getCloseReason();
     }
 
-    void WebsocketsClient::_handlePing(WebsocketsMessage message) {
+    void WebsocketsClient::_handlePing(const WebsocketsMessage message) {
         this->_eventsCallback(*this, WebsocketsEvent::GotPing, message.data());
     }
 
-    void WebsocketsClient::_handlePong(WebsocketsMessage message) {
+    void WebsocketsClient::_handlePong(const WebsocketsMessage message) {
         this->_eventsCallback(*this, WebsocketsEvent::GotPong, message.data());
     }
 
-    void WebsocketsClient::_handleClose(WebsocketsMessage message) {
+    void WebsocketsClient::_handleClose(const WebsocketsMessage message) {
         this->_eventsCallback(*this, WebsocketsEvent::ConnectionClosed, message.data());
     }
 

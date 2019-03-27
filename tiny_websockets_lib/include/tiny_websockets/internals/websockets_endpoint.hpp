@@ -42,17 +42,20 @@ namespace websockets {
 
         bool poll();
         WebsocketsMessage recv();
-        bool send(const char* data, size_t len, uint8_t opcode, bool fin = true, bool mask = false, uint8_t maskingKey[4] = nullptr);    
-        bool send(WSString data, uint8_t opcode, bool fin = true, bool mask = false, uint8_t maskingKey[4] = nullptr);    
+        bool send(const char* data, const size_t len, const uint8_t opcode, const bool fin = true, const bool mask = false, const uint8_t maskingKey[4] = nullptr);    
+        bool send(const WSString& data, const uint8_t opcode, const bool fin = true, const bool mask = false, const uint8_t maskingKey[4] = nullptr);    
         
-        bool ping(WSString msg = "");
-        bool pong(WSString msg = "");
+        bool ping(const WSString& msg);
+        bool ping(const WSString&& msg);
 
-        void close(CloseReason reason = CloseReason_NormalClosure);
-        CloseReason getCloseReason();
+        bool pong(const WSString& msg);
+        bool pong(const WSString&& msg);
 
-        void setFragmentsPolicy(FragmentsPolicy newPolicy);
-        FragmentsPolicy getFragmentsPolicy();
+        void close(const CloseReason reason = CloseReason_NormalClosure);
+        CloseReason getCloseReason() const;
+
+        void setFragmentsPolicy(const FragmentsPolicy newPolicy);
+        FragmentsPolicy getFragmentsPolicy() const;
 
         virtual ~WebsocketsEndpoint();
     private:

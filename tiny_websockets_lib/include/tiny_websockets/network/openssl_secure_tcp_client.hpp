@@ -18,7 +18,7 @@ namespace websockets { namespace network {
   public:
       OpenSSLSecureTcpClient(int s = -1) : TcpClientImpl(s) {}
 
-      bool connect(WSString host, int port) override {
+      bool connect(const WSString& host, const int port) override {
         ctx = internals::InitSSL_CTX();
         ssl = SSL_new(ctx);
         if (ssl == nullptr) {
@@ -38,7 +38,7 @@ namespace websockets { namespace network {
 
         return true;
       }
-      void send(uint8_t* data, uint32_t len) override {
+      void send(const uint8_t* data, const uint32_t len) override {
         auto res = SSL_write(ssl, data, len);
         if(res <= 0) this->close();
       }
@@ -54,10 +54,14 @@ namespace websockets { namespace network {
         if(!this->available()) close();
         return line;
       }
-      void send(WSString data) override {
-        this->send(reinterpret_cast<uint8_t*>(const_cast<char*>(data.c_str())), data.size());
+      void send(const WSString& data) override {
+        this->send(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
       }
-      void read(uint8_t* buffer, uint32_t len) override {
+      void send(const WSString&& data) override {
+        this->send(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
+      }
+
+      void read(uint8_t* buffer, const uint32_t len) override {
         auto res = SSL_read(ssl, buffer, len);
         if(res <= 0) this->close();
       }
