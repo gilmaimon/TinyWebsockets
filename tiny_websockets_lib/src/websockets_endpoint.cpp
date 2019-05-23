@@ -281,7 +281,6 @@ namespace internals {
         }
 
         // This is an error. a bad combination of opcodes and fin flag arrived.
-        // Close the connectiong and TODO: indicate ERROR
         close(CloseReason_ProtocolError);
         return {};
     }
@@ -363,15 +362,17 @@ namespace internals {
         // send the header
         sendHeader(len, opcode, fin, mask);
 
+        char* finalData = new char[len];
+        memcpy(finalData, data, len);
+
         // if masking is set, send the masking key
         if(mask) {
-            //remaskData(const_cast<char*>(data), len, maskingKey);
-            // TODO: FIX MASKING
+            remaskData(finalData, len, maskingKey);
             this->_client->send(reinterpret_cast<const uint8_t*>(maskingKey), 4);
         }
 
         if(len > 0) {
-            this->_client->send(reinterpret_cast<uint8_t*>(const_cast<char*>(data)), len);
+            this->_client->send(reinterpret_cast<uint8_t*>(finalData), len);
         }
         return true; // TODO dont assume success
     }
