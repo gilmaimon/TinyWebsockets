@@ -70,7 +70,7 @@ namespace websockets {
     CloseReason getCloseReason() const;
 
     void setUseMasking(bool useMasking) {
-      _useMasking = useMasking;
+      _endpoint.setUseMasking(useMasking);
     }
 
     virtual ~WebsocketsClient();
@@ -85,7 +85,6 @@ namespace websockets {
       SendMode_Normal,
       SendMode_Streaming
     } _sendMode;
-    bool _useMasking = true;
 
     void _handlePing(WebsocketsMessage);
     void _handlePong(WebsocketsMessage);

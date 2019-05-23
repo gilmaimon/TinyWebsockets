@@ -335,8 +335,7 @@ namespace websockets {
                     data,
                     len,
                     internals::ContentType::Text,
-                    true,
-                    this->_useMasking
+                    true
                 );
             }
             // if in streaming mode
@@ -346,8 +345,7 @@ namespace websockets {
                     data, 
                     len, 
                     internals::ContentType::Continuation,
-                    false,
-                    this->_useMasking
+                    false
                 );
             }
         }
@@ -368,8 +366,7 @@ namespace websockets {
                     data,
                     len,
                     internals::ContentType::Binary,
-                    true,
-                    this->_useMasking
+                    true
                 );
             }
             // if in streaming mode
@@ -379,8 +376,7 @@ namespace websockets {
                     data, 
                     len, 
                     internals::ContentType::Continuation,
-                    false,
-                    this->_useMasking
+                    false
                 );
             }
         }
@@ -393,8 +389,7 @@ namespace websockets {
             return _endpoint.send(
                 internals::fromInterfaceString(data), 
                 internals::ContentType::Text, 
-                false,
-                this->_useMasking
+                false
             );
         }
         return false;
@@ -407,8 +402,7 @@ namespace websockets {
             return _endpoint.send(
                 internals::fromInterfaceString(data), 
                 internals::ContentType::Binary, 
-                false,
-                this->_useMasking
+                false
             );
         }
         return false;
@@ -420,8 +414,7 @@ namespace websockets {
             return _endpoint.send(
                 internals::fromInterfaceString(data), 
                 internals::ContentType::Continuation, 
-                true,
-                this->_useMasking
+                true
             );
         }
         return false;
