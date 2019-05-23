@@ -42,8 +42,8 @@ namespace websockets {
 
         bool poll();
         WebsocketsMessage recv();
-        bool send(const char* data, const size_t len, const uint8_t opcode, const bool fin = true, const bool mask = true, const char* maskingKey = "\0\0\0\0");    
-        bool send(const WSString& data, const uint8_t opcode, const bool fin = true, const bool mask = true, const char* maskingKey = "\0\0\0\0");
+        bool send(const char* data, const size_t len, const uint8_t opcode, const bool fin = true, const bool mask = true, const char* maskingKey = "\1\2\3\4");    
+        bool send(const WSString& data, const uint8_t opcode, const bool fin = true, const bool mask = true, const char* maskingKey = "\1\2\3\4");
         
         bool ping(const WSString& msg);
         bool ping(const WSString&& msg);

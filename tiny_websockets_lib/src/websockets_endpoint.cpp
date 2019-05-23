@@ -1,4 +1,5 @@
 #include <tiny_websockets/internals/websockets_endpoint.hpp>
+#include <iostream>
 
 namespace websockets { 
 
@@ -171,6 +172,12 @@ namespace internals {
         }
     }
 
+    void remaskData(char* data, uint64_t payloadLength, const char* maskingKey) {
+        for (uint64_t i = 0; i < payloadLength; i++) {
+            data[i] = data[i] ^ maskingKey[i % 4];
+        }
+    }
+
     WebsocketsFrame WebsocketsEndpoint::_recv() {
         auto header = readHeaderFromSocket(*this->_client);
         uint64_t payloadLength = readExtendedPayloadLength(*this->_client, header);
@@ -298,6 +305,7 @@ namespace internals {
         if(msg.isPing()) {
             pong(internals::fromInterfaceString(msg.data()));
         } else if(msg.isClose()) {
+            std::cout << "Got close message" << std::endl;
             // is there a reason field
             if(internals::fromInterfaceString(msg.data()).size() >= 2) {
                 uint16_t reason = *(reinterpret_cast<const uint16_t*>(msg.data().c_str()));
@@ -352,6 +360,7 @@ namespace internals {
 
         // if masking is set, send the masking key
         if(mask) {
+            remaskData(const_cast<char*>(data), len, maskingKey);
             this->_client->send(reinterpret_cast<const uint8_t*>(maskingKey), 4);
         }
 
@@ -364,6 +373,7 @@ namespace internals {
     void WebsocketsEndpoint::close(CloseReason reason) {
         if(!this->_client->available()) return;
 
+        std::cout << "Someone called `close` " << static_cast<int>(reason) << std::endl;
         this->_closeReason = reason;
         if(reason == CloseReason_None) {
             send(nullptr, 0, internals::ContentType::Close);

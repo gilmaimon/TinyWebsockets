@@ -30,16 +30,21 @@ int main() {
   while(server.available()) {
     // accept a client
     WebsocketsClient client = server.accept();
+    std::cout << "Client connected" << std::endl;
     
     while(client.available()) {
       // get a message, if it is text, return an echo
       auto message = client.readBlocking();
-      if(message.isText()){
+      if(message.isText()) {
         client.send("Echo: " + message.data());
+        std::cout << "Sending echo: " << message.data() << std::endl;
       }
     }
     
     // close the connection
+    if(client.available() == false) {
+      std::cout << static_cast<int>(client.getCloseReason()) << std::endl;
+    }
     client.close();
   }
 }
