@@ -334,7 +334,9 @@ namespace websockets {
                 return _endpoint.send(
                     data,
                     len,
-                    internals::ContentType::Text
+                    internals::ContentType::Text,
+                    true,
+                    this->_useMasking
                 );
             }
             // if in streaming mode
@@ -344,7 +346,8 @@ namespace websockets {
                     data, 
                     len, 
                     internals::ContentType::Continuation,
-                    false
+                    false,
+                    this->_useMasking
                 );
             }
         }
@@ -364,7 +367,9 @@ namespace websockets {
                 return _endpoint.send(
                     data,
                     len,
-                    internals::ContentType::Binary
+                    internals::ContentType::Binary,
+                    true,
+                    this->_useMasking
                 );
             }
             // if in streaming mode
@@ -374,7 +379,8 @@ namespace websockets {
                     data, 
                     len, 
                     internals::ContentType::Continuation,
-                    false
+                    false,
+                    this->_useMasking
                 );
             }
         }
@@ -387,7 +393,8 @@ namespace websockets {
             return _endpoint.send(
                 internals::fromInterfaceString(data), 
                 internals::ContentType::Text, 
-                false
+                false,
+                this->_useMasking
             );
         }
         return false;
@@ -400,7 +407,8 @@ namespace websockets {
             return _endpoint.send(
                 internals::fromInterfaceString(data), 
                 internals::ContentType::Binary, 
-                false
+                false,
+                this->_useMasking
             );
         }
         return false;
@@ -412,7 +420,8 @@ namespace websockets {
             return _endpoint.send(
                 internals::fromInterfaceString(data), 
                 internals::ContentType::Continuation, 
-                true
+                true,
+                this->_useMasking
             );
         }
         return false;

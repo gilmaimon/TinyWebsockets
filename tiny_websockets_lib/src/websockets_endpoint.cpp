@@ -354,7 +354,9 @@ namespace internals {
             return false;
         }
 #endif
-        
+
+        std::cout << "Sending msg, masking? " << mask << std::endl;
+
         // send the header
         sendHeader(len, opcode, fin, mask);
 
@@ -376,11 +378,11 @@ namespace internals {
         std::cout << "Someone called `close` " << static_cast<int>(reason) << std::endl;
         this->_closeReason = reason;
         if(reason == CloseReason_None) {
-            send(nullptr, 0, internals::ContentType::Close);
+            send(nullptr, 0, internals::ContentType::Close, true, false);
         } else {
             uint16_t reasonNum = static_cast<uint16_t>(reason);
             reasonNum = (reasonNum >> 8) | (reasonNum << 8);
-            send(reinterpret_cast<const char*>(&reasonNum), 2, internals::ContentType::Close);
+            send(reinterpret_cast<const char*>(&reasonNum), 2, internals::ContentType::Close, true, false);
         }
         this->_client->close();
     }
@@ -395,7 +397,7 @@ namespace internals {
             return false;
         }
         else {
-            return send(msg, ContentType::Ping);
+            return send(msg, ContentType::Ping, true, false);
         }
     }
     bool WebsocketsEndpoint::ping(const WSString&& msg) {
@@ -404,7 +406,7 @@ namespace internals {
             return false;
         }
         else {
-            return send(msg, ContentType::Ping);
+            return send(msg, ContentType::Ping, true, false);
         }
     }
 
@@ -414,7 +416,7 @@ namespace internals {
             return false;
         }
         else {
-            return this->send(msg, ContentType::Pong);
+            return this->send(msg, ContentType::Pong, true, false);
         }
     }
     bool WebsocketsEndpoint::pong(const WSString&& msg) {
@@ -423,7 +425,7 @@ namespace internals {
             return false;
         }
         else {
-            return this->send(msg, ContentType::Pong);
+            return this->send(msg, ContentType::Pong, true, false);
         }
     }
 

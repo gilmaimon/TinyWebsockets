@@ -69,6 +69,10 @@ namespace websockets {
     void close(const CloseReason reason = CloseReason_NormalClosure);
     CloseReason getCloseReason() const;
 
+    void setUseMasking(bool useMasking) {
+      _useMasking = useMasking;
+    }
+
     virtual ~WebsocketsClient();
 
   private:
@@ -81,6 +85,7 @@ namespace websockets {
       SendMode_Normal,
       SendMode_Streaming
     } _sendMode;
+    bool _useMasking = true;
 
     void _handlePing(WebsocketsMessage);
     void _handlePong(WebsocketsMessage);
