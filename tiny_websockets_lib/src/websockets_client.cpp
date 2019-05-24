@@ -334,7 +334,8 @@ namespace websockets {
                 return _endpoint.send(
                     data,
                     len,
-                    internals::ContentType::Text
+                    internals::ContentType::Text,
+                    true
                 );
             }
             // if in streaming mode
@@ -364,7 +365,8 @@ namespace websockets {
                 return _endpoint.send(
                     data,
                     len,
-                    internals::ContentType::Binary
+                    internals::ContentType::Binary,
+                    true
                 );
             }
             // if in streaming mode

@@ -69,6 +69,10 @@ namespace websockets {
     void close(const CloseReason reason = CloseReason_NormalClosure);
     CloseReason getCloseReason() const;
 
+    void setUseMasking(bool useMasking) {
+      _endpoint.setUseMasking(useMasking);
+    }
+
     virtual ~WebsocketsClient();
 
   private:
