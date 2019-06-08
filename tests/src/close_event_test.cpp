@@ -60,3 +60,34 @@ TEST_CASE( "Testing - Event callback for `close` should be called when user clos
     REQUIRE( closeCalled == 1 );
     REQUIRE( openCalled == 1 );
 }
+
+TEST_CASE( "Testing - Event callback for `close` should be called when abnormal closure occurs" ) {
+    std::shared_ptr<network::TcpClient> intenalTcpClient = std::make_shared<WSDefaultTcpClient>();
+    WebsocketsClient client(intenalTcpClient);
+
+    volatile int closeCalled = 0;
+    volatile int openCalled = 0;
+
+    client.onEvent([&openCalled, &closeCalled](WebsocketsClient& client, WebsocketsEvent event, auto data) {
+        if(event == WebsocketsEvent::ConnectionClosed) {
+            REQUIRE( client.getCloseReason() == CloseReason_AbnormalClosure );
+            ++closeCalled;
+        } else if(event == WebsocketsEvent::ConnectionOpened) {
+            REQUIRE( closeCalled == 0 );
+            ++openCalled;
+        } else {
+            REQUIRE( false == true ); // Should never happen in this test
+        }
+    });
+
+    REQUIRE( client.connect("localhost", 8080, "/") == true );
+    REQUIRE( client.available() == true );
+
+    // abnormal tcp closure
+    intenalTcpClient->close();
+    
+    REQUIRE( client.available() == false );
+    REQUIRE( client.getCloseReason() == CloseReason_AbnormalClosure );
+    REQUIRE( closeCalled == 1 );
+    REQUIRE( openCalled == 1 );
+}

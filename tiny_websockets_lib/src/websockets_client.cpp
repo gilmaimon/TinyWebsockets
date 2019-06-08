@@ -294,6 +294,7 @@ namespace websockets {
             } else if(msg.isPong()) {
                 _handlePong(std::move(msg));
             } else if(msg.isClose()) {
+                this->_connectionOpen = false;
                 _handleClose(std::move(msg));
             }
         }
@@ -425,11 +426,19 @@ namespace websockets {
     }
 
     bool WebsocketsClient::available(const bool activeTest) {
-        this->_connectionOpen &= this->_client && this->_client->available();
-        if(this->_connectionOpen && activeTest)  {
+        if(activeTest)  {
             _endpoint.ping("");
         }
-        return _connectionOpen;
+
+        bool updatedConnectionOpen = this->_connectionOpen && this->_client && this->_client->available();
+        
+        if(updatedConnectionOpen != this->_connectionOpen) {
+            _endpoint.close(CloseReason_AbnormalClosure);
+            this->_eventsCallback(*this, WebsocketsEvent::ConnectionClosed, "");
+        }
+
+        this->_connectionOpen = updatedConnectionOpen;
+        return this->_connectionOpen;
     }
 
     bool WebsocketsClient::ping(const WSInterfaceString data) {
@@ -448,8 +457,8 @@ namespace websockets {
 
     void WebsocketsClient::close(const CloseReason reason) {
         if(available()) {
-            _endpoint.close(reason);
             this->_connectionOpen = false;
+            _endpoint.close(reason);
             _handleClose({});
         }
     }
