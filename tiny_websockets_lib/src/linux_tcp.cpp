@@ -61,8 +61,8 @@ namespace websockets { namespace network {
     return true;
   }
 
-  bool linuxTcpRead(int _socket, uint8_t* buffer, size_t len) {
-    return read(_socket, buffer, len) > 0;
+  ssize_t linuxTcpRead(int _socket, uint8_t* buffer, size_t len) {
+    return read(_socket, buffer, len);
   }
 
   LinuxTcpClient::LinuxTcpClient(const int socket) : _socket(socket) {
@@ -121,9 +121,10 @@ namespace websockets { namespace network {
     return line;
   }
   
-  void LinuxTcpClient::read(uint8_t* buffer, const uint32_t len) {
-    auto success = linuxTcpRead(this->_socket, buffer, len);
-    if(!success) close();
+  uint32_t LinuxTcpClient::read(uint8_t* buffer, const uint32_t len) {
+    auto numRead = linuxTcpRead(this->_socket, buffer, len);
+    if(numRead < 0) close();
+    return numRead;
   }
 
   void LinuxTcpClient::close()  {
