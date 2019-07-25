@@ -3,9 +3,11 @@ node_modules/
 
 #vscode
 .vscode/
+.vs/
 
 #cmake and build files
 build/
+buildwin/
 lib/
 bin/
 

@@ -29,7 +29,7 @@ namespace websockets { namespace network {
         void send(const WSString&& data) override;
         void send(const uint8_t* data, const uint32_t len) override;
         WSString readLine() override;
-        void read(uint8_t* buffer, const uint32_t len) override;
+        uint32_t read(uint8_t* buffer, const uint32_t len) override;
         void close() override;
         virtual ~WinTcpClient();
 

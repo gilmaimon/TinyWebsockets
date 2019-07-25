@@ -93,14 +93,14 @@ namespace websockets { namespace network {
 #endif
 
   // Returns true if error occured
-  bool windowsTcpRecive(uint8_t* buffer, uint32_t len, SOCKET socket) {
+  uint32_t windowsTcpRecive(uint8_t* buffer, uint32_t len, SOCKET socket) {
     // Receive until the peer closes the connection
     int iResult = recv(socket, reinterpret_cast<char*>(buffer), len, MSG_WAITALL);
     if (iResult > 0) {
-      return false;
+      return static_cast<uint32_t>(iResult);
     }
     else {
-      return true;
+      return 0;
     }
   }
 
@@ -143,18 +143,20 @@ namespace websockets { namespace network {
   WSString WinTcpClient::readLine() {
     uint8_t byte = '0';
     WSString line;
-    auto error = windowsTcpRecive(&byte, 1, this->socket);
-    while (!error) {
+    auto numReceived = windowsTcpRecive(&byte, 1, this->socket);
+    while (numReceived > 0) {
       line += static_cast<char>(byte);
       if (byte == '\n') break;
-      error = windowsTcpRecive(&byte, 1, this->socket);
+	  numReceived = windowsTcpRecive(&byte, 1, this->socket);
     }
-    if(error) close();
+    if(numReceived <= 0) close();
     return line;
   }
-  void WinTcpClient::read(uint8_t* buffer, const uint32_t len) {
-    auto error = windowsTcpRecive(buffer, len, this->socket);
-    if(error) close();
+
+  uint32_t WinTcpClient::read(uint8_t* buffer, const uint32_t len) {
+    auto numReceived = windowsTcpRecive(buffer, len, this->socket);
+    if(numReceived == 0) close();
+	  return numReceived;
   }
 
   void WinTcpClient::close() {
