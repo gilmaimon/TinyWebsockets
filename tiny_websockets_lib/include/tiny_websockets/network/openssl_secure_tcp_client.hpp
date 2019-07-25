@@ -61,9 +61,13 @@ namespace websockets { namespace network {
         this->send(reinterpret_cast<const uint8_t*>(data.c_str()), data.size());
       }
 
-      void read(uint8_t* buffer, const uint32_t len) override {
-        auto res = SSL_read(ssl, buffer, len);
-        if(res <= 0) this->close();
+      uint32_t read(uint8_t* buffer, const uint32_t len) override {
+        auto numWritten = SSL_read(ssl, buffer, len);
+        if (numWritten <= 0) {
+          this->close();
+          return 0;
+        }
+        return static_cast<uint32_t>(numWritten);
       }
       
       void close() override {
