@@ -62,12 +62,12 @@ namespace websockets { namespace network {
       }
 
       uint32_t read(uint8_t* buffer, const uint32_t len) override {
-        auto numWritten = SSL_read(ssl, buffer, len);
-        if (numWritten <= 0) {
+        auto numReceived = SSL_read(ssl, buffer, len);
+        if (numReceived <= 0) {
           this->close();
           return 0;
         }
-        return static_cast<uint32_t>(numWritten);
+        return static_cast<uint32_t>(numReceived);
       }
       
       void close() override {
