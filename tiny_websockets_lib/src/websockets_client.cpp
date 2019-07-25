@@ -158,7 +158,7 @@ namespace websockets {
     }
 
     void WebsocketsClient::addHeader(const WSInterfaceString key, const WSInterfaceString value) {
-        _customHeaders.push_back({key, value});
+        _customHeaders.push_back({internals::fromInterfaceString(key), internals::fromInterfaceString(value)}); 
     }
 
     bool WebsocketsClient::connect(WSInterfaceString _url) {
