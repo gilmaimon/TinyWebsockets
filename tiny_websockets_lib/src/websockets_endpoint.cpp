@@ -197,14 +197,14 @@ namespace internals {
 
     WebsocketsFrame WebsocketsEndpoint::_recv() {
         auto header = readHeaderFromSocket(*this->_client);
-        if(!_client->available()) return WebsocketsFrame{}; // In case of faliure
+        if(!_client->available()) return WebsocketsFrame(); // In case of faliure
 
         uint64_t payloadLength = readExtendedPayloadLength(*this->_client, header);
-        if(!_client->available()) return WebsocketsFrame{}; // In case of faliure
+        if(!_client->available()) return WebsocketsFrame(); // In case of faliure
 
 #ifdef _WS_CONFIG_MAX_MESSAGE_SIZE
         if(payloadLength > _WS_CONFIG_MAX_MESSAGE_SIZE) {
-            return WebsocketsFrame{};
+            return WebsocketsFrame();
         }
 #endif
 
@@ -212,13 +212,13 @@ namespace internals {
         // if masking is set
         if (header.mask) {
             readMaskingKey(*this->_client, maskingKey);
-            if(!_client->available()) return WebsocketsFrame{}; // In case of faliure
+            if(!_client->available()) return WebsocketsFrame(); // In case of faliure
         }
 
         WebsocketsFrame frame;
         // read the message's payload (data) according to the read length
         frame.payload = readData(*this->_client, payloadLength);
-        if(!_client->available()) return WebsocketsFrame{}; // In case of faliure
+        if(!_client->available()) return WebsocketsFrame(); // In case of faliure
 
         // if masking is set un-mask the message
         if (header.mask) {
