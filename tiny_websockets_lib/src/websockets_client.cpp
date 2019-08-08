@@ -153,7 +153,7 @@ namespace websockets {
     void WebsocketsClient::upgradeToSecuredConnection() {
     #ifndef _WS_CONFIG_NO_SSL
         this->_client = std::make_shared<WSDefaultSecuredTcpClient>();
-        this->_endpoint = {this->_client};
+        this->_endpoint.setInternalSocket(this->_client);
     #endif //_WS_CONFIG_NO_SSL
     }
 
