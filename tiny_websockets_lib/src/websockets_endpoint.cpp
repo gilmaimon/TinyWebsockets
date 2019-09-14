@@ -400,7 +400,7 @@ namespace internals {
             this->_client->send(reinterpret_cast<const uint8_t*>(maskingKey), 4);
         }
 
-        if(len >= 0) {
+        if(len > 0) {
             this->_client->send(reinterpret_cast<uint8_t*>(finalData), len);
         }
 
