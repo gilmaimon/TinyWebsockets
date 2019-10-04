@@ -57,6 +57,7 @@ TEST_CASE( "Testing Server Creation and basic Communication" ) {
 
     REQUIRE( message.isText() );
     REQUIRE( message.data() == "Hello Client" );
+    REQUIRE( message.data().size() == message.length() );
     
     client.close();
     serverThread.join();
