@@ -382,22 +382,32 @@ namespace internals {
         }
 #endif
         // send the header
-        std::string message_data = getHeader(len, opcode, fin, mask);
+        sendHeader(len, opcode, fin, mask);
 
-        if (mask) {
-          message_data += std::string(maskingKey, 4);
+        char* finalData = const_cast<char*>(data);
+        bool shouldFreeBuffer = false;
+
+        if(mask) {
+            if(memcmp(maskingKey, __TINY_WS_INTERNAL_DEFAULT_MASK, 4) != 0) {
+                finalData = new char[len];
+                shouldFreeBuffer = true;
+
+                memcpy(finalData, data, len);
+                remaskData(finalData, len, maskingKey);
+            }
+
+            this->_client->send(reinterpret_cast<const uint8_t*>(maskingKey), 4);
         }
 
-        size_t data_start = message_data.size();
-        message_data += std::string(data, len);
-
-        if (mask && memcmp(maskingKey, __TINY_WS_INTERNAL_DEFAULT_MASK, 4) != 0) {
-          remaskData(message_data, maskingKey, data_start, len);
+        if(len > 0) {
+            this->_client->send(reinterpret_cast<uint8_t*>(finalData), len);
         }
 
-        this->_client->send(reinterpret_cast<const uint8_t*>(message_data.c_str()), message_data.size());
-        return true; // TODO dont assume success
-    }
+        if(shouldFreeBuffer) {
+            delete[] finalData;
+        }
+        return true; // TODO dont assume success    
+	}
 
     void WebsocketsEndpoint::close(CloseReason reason) {
         this->_closeReason = reason;
